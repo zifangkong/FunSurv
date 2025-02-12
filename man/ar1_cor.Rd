@@ -2,7 +2,7 @@
 % Please edit documentation in R/ar1_cor.R
 \name{ar1_cor}
 \alias{ar1_cor}
-\title{construct the AR(1) correlation structure}
+\title{Function to construct AR(1) correlation matrix}
 \usage{
 ar1_cor(n, rho)
 }
@@ -15,5 +15,5 @@ ar1_cor(n, rho)
 A n by n matrix
 }
 \description{
-construct the AR(1) correlation structure
+Function to construct AR(1) correlation matrix
 }
