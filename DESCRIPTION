@@ -1,10 +1,16 @@
 Package: FunSurv
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Joint analysis of recurrent event and longitudinal data using a functional regression approach
+Version: 1.0.0
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+    c(person("Zifang", "Kong", , "zkong@smu.edu", role = c("aut", "cre")),
+      person("Sy Han (Steven)", "Chiou", role = c("aut", "cre")),
+      person("Yu-Lun", "Liu", role = c("aut")))
+Description: Functions to jointly analyze longitudinal measurements and recurrent events by accommodating both scalar and functional predictors while accounting for time-dependent correlations among events.
+Depends: R (>= 3.4.0)
 License: MIT + file LICENSE
+URL: https://github.com/zifangkong/FunSurv
+BugReports: https://github.com/zifangkong/FunSurv/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Imports: MFPCA
