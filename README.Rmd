@@ -1,0 +1,46 @@
+---
+output: github_document
+---
+
+## **FunSurv**
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+### Funcational data analysis for recurrent event data
+***FunSurv*** implements a collection of ...
+
+### Installation
+
+You can install and load **FunSurv** from CRAN using
+
+```{r cran-installation, eval = FALSE}
+install.packages("FunSurv")
+library(FunSurv)
+```
+
+You can install **FunSurv** from Github with:
+
+```{r gh-installation, eval = FALSE}
+## install.packages("devtools")
+devtools::install_github("zifangkong/FunSurv", ref = "master")
+```
+
+### Citation
+Cite ***FunSurv*** with `citation("FunSurv")`.
+```{R, eval = FALSE}
+citation("FunSurv")
+```
+
+### Online documentation 
+
+Add a vignette 
+
+### References:
+
+reference your paper
