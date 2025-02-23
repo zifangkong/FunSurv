@@ -1,124 +1,201 @@
-#' This looks like one of the main functions
-#'
-#' @param 
+#' Main function
 #' 
-AR1_frailty <- function(dat, theta20, rho20, itmax, q) {
-  p <- ncol(dat) - 3 # 3 (x1, x2, y) # number of predictors in the survival model
-  M <- nrow(dat) # M<-2093 observations
-  patient <- dat[, 1]
-  N <- length(unique(patient)) # N<-500 unique subjects  
-  R2 <- diag(M) # M by M identity matrix
-  ni <- table(dat[, 1]) # number of observations per subject
-  obj3 <- IJK(ni)
-  XZ2 <- cbind(dat, R2)
-  XZ2.r <- XZ2[sort.list(XZ2[, 2]), ] # sort by gap time (to get distinct gap time)
-  time <- as.vector(XZ2.r[, 2]) #sorted gap times
-  indi <- as.vector(XZ2.r[, 3]) #corresponding event indicator (1 for event, 0 for censored)
-  R2 <- as.matrix(XZ2.r[, -(1:(3 + p))]) # for the hazard model (random effect design matrix) (sorted based on gap time)
-  X_surv <- matrix(as.numeric(unlist(XZ2.r[, 4:(3 + p)])), ncol = p) # design matrix
-  M1 <- matrix(1, M, M)
-  M1[upper.tri(M1)] <- 0  
-  for (ii in 1:M) {
-    if (indi[M - ii + 1] == 1) {
-      largest <- M - ii + 1
-      break
-    } # largest index of event outcome
-  }  
-  Constrain <- diag(c(rep(1, largest), rep(0, (M - largest))))
-  Constrain0 <- diag(c(rep(0, largest), rep(1, (M - largest))))
-  ## initial values
-  beta0 <- as.vector(rep(0, p)) # beta is the coefficients in the hazard model without intercept term
-  V <- as.vector(rep(0, M)) # M is the number of observations
-  par0 <- as.vector(c(beta0, V)) # parameters in the hazard model
-  eta <- as.vector(X_surv %*% beta0 + R2 %*% V)
-  flag.var <- 0
-  eps.reg <- eps.var <- 0.0001
-  for (outer.iter in 1:itmax) {
-    ## itmax is user-defined max number of iterations
-    flag.reg <- 0
-    ob3 <- get_G_inv(rho20, obj3$I, obj3$J, obj3$K)
-    UG2 <- diag(0, (p + M)) # what are UG1 and UG2??
-    UG2[(p + 1):(p + M), (p + 1):(p + M)] <- ob3$IR / theta20
-    for (inner.iter in 1:itmax) {
-      eta <- as.vector(X_surv %*% beta0 + R2 %*% V)      
-      ## ############ Latency part ########################################
-      w <- diag(as.vector(exp(eta)))
-      A <- diag(as.vector(indi / (t(M1) %*% (exp(eta)))))
-      B <- diag(as.vector(M1 %*% A %*% rep(1, M)))
-      f2.eta <- w %*% B - w %*% M1 %*% A %*% A %*% t(M1) %*% w # second derivative??
-      f1.eta <- as.vector(indi - w %*% M1 %*% A %*% rep(1, M)) # first derivative?
-      dl.dbeta <- t(X_surv) %*% f1.eta
-      dl.dV <- t(R2) %*% f1.eta - (1 / theta20) * (ob3$IR %*% V)
-      XX2 <- cbind(X_surv, R2)
-      H2 <- solve(t(XX2) %*% f2.eta %*% XX2 + UG2)
-      Svec <- as.vector(c(dl.dbeta, dl.dV))
-      par <- par0 + H2 %*% Svec      
-      ## update initial values
-      if (max(abs(par - par0)) < eps.reg) {
-        flag.reg <- 1
-        break
+#' @param formula A Event formula, with the response on the left of a ~ operator, 
+#' and scalar covariates on the right. The response must be a Event object using Event function. 
+#' @param data A data frame, including time-to-event outcomes, and scalar coefficients
+#' @param scores A data frame of FPC scores, returned by the AR1_PACE function
+#' @param para0 Initial values for \eqn{\theta^2} and auto-regressive coefficient \eqn{\rho}.
+#' @param iter.max Maximum number of iterations for both inner iteration and outer iteration. Defaults to \code{50}.
+#' @param eps Tolerance criteria for a possible infinite coefficient value. Defaults to \code{1e-6.}
+#'
+#' @returns A AR1_frailty object
+#' @export
+#'
+#' @examples AR1_frailty(Event(t_start, t_stop, id, status) ~ z1, data=surv_data, scores=scores, para0=c(0.5, 0,5))
+AR1_frailty <- function(formula, 
+                        data, 
+                        scores, 
+                        para0, 
+                        iter.max=50, 
+                        eps=1e-6) {
+   
+   if (missing(formula)) stop("A Event formula is required.")
+   
+   if (missing(data)) stop("A dataset of time-to-event outcomes is required.")
+   
+   if (missing(scores)) stop("A dataset of FPC scores, returned by the AR1_PACE function is required.")
+   
+   if (missing(para0)) stop("Initial values for theta^2 and rho are required")
+   
+   terms_obj <- terms(formula)
+   response <- as.character(attr(terms_obj, "variables")[[2]])[-1]
+   covariates <- attr(terms_obj, "term.labels")
+   
+   # extract data
+   DF <- model.frame(reformulate(c(response, covariates)), data)
+   
+   if(nrow(DF) != nrow(scores)) stop("Dimension of data does not match with the dimension of FPC scores")
+   DF <- cbind(DF, scores)
+   colnames(DF) <- c("t_start", "t_stop", "id", "status", covariates, paste0("score", seq(ncol(scores))))
+   DF$gap_time = DF$t_stop - DF$t_start
+   
+   p <- length(covariates) + ncol(scores)  # mumber of predictors in the survival model
+   N <- nrow(DF)  # total number of event observations
+   M <- length(unique(DF$id))  # number of unique subjects
+   R <- diag(N)  # Identity matrix
+   DF <- cbind(DF, R)
+   
+   ni <- table(DF$id)  # Observations per subject
+   ijk <- IJK(ni)
+   DF_sorted <- DF[order(DF$gap_time), ]  # Sort by gap time
+   indi <- as.vector(DF_sorted$status)  # Event indicator
+   X_surv <- as.matrix(DF_sorted[, c(covariates, paste0("score", seq(ncol(scores))))])  # Design matrix
+   R <- as.matrix(DF_sorted[, (ncol(DF_sorted)-ncol(R)+1):ncol(DF_sorted)])
+   XX <- cbind(X_surv, R)
+   W <- matrix(1, N, N)
+   W[upper.tri(W)] <- 0
+   H22 <- diag(0, (p + N)) ## initial of Hessian matrix
+   
+   ## Initial values
+   beta0 <- rep(0, p)
+   V0 <- rep(0, N)
+   par0 <- c(beta0, V0)
+   rho0 <- params[1]
+   theta20 <- params[2]
+   eps <- 1e-6
+   convergence <- 0
+
+   
+   for (outer.iter in 1:iter.max) {
+      # Optimize beta and V
+      AR_inv <- (1+rho0^2) * ijk$I - rho0 * ijk$J - rho0^2 * ijk$K
+      H22[(p + 1):(p + N), (p + 1):(p + N)] <- AR_inv / theta20
+      
+      for (inner.iter in 1:iter.max) {
+         eta <- as.vector(X_surv %*% beta0 + R %*% V0)
+         
+         ######################################################
+         w <- diag(as.vector(exp(eta)))
+         A <- diag(as.vector(indi / (t(W) %*% (exp(eta)))))
+         B <- diag(as.vector(W %*% A %*% rep(1, N)))
+         dll.eta <- w %*% B - w %*% W %*% A %*% A %*% t(W) %*% w # second derivative wrt eta
+         dl.eta <- as.vector(indi - w %*% W %*% A %*% rep(1, N)) # first derivative wrt eta
+         dl.dbeta <- t(X_surv) %*% dl.eta
+         dl.dV <- crossprod(R, dl.eta) - (1 / theta20) * (AR_inv %*% V0)
+         H2 <- solve(crossprod(XX, dll.eta) %*% XX + H22)
+         Svec <- as.vector(c(dl.dbeta, dl.dV))
+         par <- par0 + H2 %*% Svec
+         if (max(abs(par - par0)) < eps) {
+            convergence <- 1
+            break
+         }
+         
+         ## Update beta and V
+         par0 <- par
+         beta0 <- beta <- par[1:p]
+         V0 <- V <- par[(p + 1):(p + N)]
       }
-      par0 <- par
-      beta0 <- par[1:p]
-      V <- par[(p + 1):(p + M)]
-    }    
-    if (flag.reg == 0)
-      stop("not reach convergence")
-    flag.reg = 0    
-    ## ##### Variance parameter of the latency part##################
-    tau2 <- (V %*% t(V) + H2[(p + 1):(p + M), (p + 1):(p + M)])
-    objQ <- get_survival_params(tau2, ni, rho20, obj3$J, obj3$K)
-    rho2 <- objQ$rho2
-    theta2 <- objQ$theta2
-    if (max(abs(c((theta2 - theta20), (rho2 - rho20)))) < eps.var) {
-      flag.var <- 1
-      break
-    }
-    theta20 <- theta2
-    rho20 <- rho2
-    bres.etail <- breslow(Constrain, Constrain0, largest, time, M1, indi, eta)
-    survbase <- bres.etail$survbase
-  }
-  bres.etail <- breslow(Constrain, Constrain0, largest, time, M1, indi, eta)
-  survbase <- bres.etail$survbase
-  survprob <- survbase ^ (exp(eta))
-  eta0 <- as.vector(X_surv[, 1] * beta0[1] + R2 %*% V)
-  LR <- 2 * (sum(indi * eta) - log(indi %*% M1 %*% exp(eta))) - 2 * (sum(indi * eta0) - log(indi %*% M1 %*% exp(eta0)))
-  ## #############################################################
-  ## SE for the variance components
-  IR <- ob3$IR
-  difIR <- ob3$difIR
-  K1.lat <- (H2[(p + 1):(p + M), (p + 1):(p + M)] %*% IR) / theta2
-  K2.lat <- (H2[(p + 1):(p + M), (p + 1):(p + M)] %*% difIR) / theta2
-  K3.lat <- solve(IR) %*% difIR
-  b11 <- sum(diag((diag(M) - K1.lat) %*% (diag(M) - K1.lat))) / theta2^2
-  b12 <- -sum(diag((diag(M) - K1.lat) %*% (diag(M) - K1.lat) %*% K3.lat)) / theta2
-  b21 <- b12
-  b22 <- sum(diag((K2.lat - K3.lat) %*% (K2.lat - K3.lat)))
-  varmat <- 2 * solve(matrix(c(b11, b12, b21, b22), ncol = 2))
-  se.var <- sqrt(diag(varmat))
-  stdvar <- cbind(c(theta2, rho2), sqrt(diag(varmat)), 2 * (1 - pnorm(abs(c(theta2, rho2) / sqrt(diag(varmat))))))
-  dimnames(stdvar) <- list(c("theta2", "rho2"), c("estimate", "s.e.", "p-value"))
-  stdvar <- round(stdvar, 3)
-  ## #########################################
-  beta <- par0[1:p]
-  se.beta <- sqrt(abs(diag(H2)[1:p]))
-  ## #################
-  ebeta <- cbind(beta, se.beta, 2 * (1 - pnorm(abs(beta / se.beta))))
-  names(beta) <- colnames(dat)[4:ncol(dat)]
-  dimnames(ebeta) <- list(names(beta), c("Estimate", "SE", "p-value"))
-  score_stat <- t(dl.dbeta[2:p]) %*% (t(XX2) %*% f2.eta %*% XX2 + UG2)[2:p, 2:p] %*% (dl.dbeta[2:p])
-  return(
-    list(ebeta = ebeta,
-         stdvar = stdvar,
-         bres.etail = bres.etail,
-         H2 = H2[1:p, 1:p],
-         score_stat = score_stat,
-         LR = LR,
-         df = p - 1,
-         survprob = survprob[rank(XZ2[, 2])],
-         survbase = survbase[rank(XZ2[, 2])],
-         eta = eta[rank(XZ2[, 2])],
-         frailty = V)
-  )
+      ## UPDATE rho and theta2
+      tau <- tcrossprod(V) + H2[(p + 1):(p + N), (p + 1):(p + N)]
+      ar_var <- calculate_variance_components(ni, tau, rho0, ijk$J, ijk$K)
+      rho <- ar_var$rho
+      theta2 <- ar_var$theta2
+      
+      if (pmax(abs(theta2 - theta20), abs(rho - rho0)) < eps) {
+         convergence <- 1
+         break
+      }
+      theta20 <- theta2
+      rho0 <- rho
+   }
+   
+   ## baseline survival function
+   basesurv <- exp(-W %*% (indi / (t(W) %*% (exp(eta)))))
+   
+   ## Calculate variance-covariance matrix using numerical Hessian
+   se.beta <- sqrt(abs(diag(H2)[1:p]))
+   ebeta <- cbind(beta, se.beta, 2*(1-pnorm(abs(beta/se.beta))))
+   dimnames(ebeta) <- list(c(covariates, colnames(scores)), c("Estimate", "SE", "p-value"))
+   
+   ## SE for the variance components
+   # block_list <- lapply(ni, function(ni) ar1_cor(ni, rho))
+   # A <- bdiag(block_list)  # Sparse block diagonal matrix
+   # A <- as.matrix(A)
+   # Q1 <- dll.eta + theta2 * R %*% A %*% t(R)
+   # dQ1.theta2 <- R %*% A %*% t(R)
+   # dQ1.rho <- 
+   # Q2 <- solve(Q1)  - solve(Q1) %*% X_surv %*% solve(t(X_surv) %*% solve(Q1) %*% X_surv) %*% t(X_surv) %*% solve(Q1)
+   # b11 <- sum(diag(Q2 %*% ))
+   
+   d.rho <- 2 * rho * ijk$I - ijk$J - 2 * rho * ijk$K
+   K1 <- (H2[(p + 1):(p + N), (p + 1):(p + N)] %*% AR_inv) / theta2
+   K2 <- (H2[(p + 1):(p + N), (p + 1):(p + N)] %*% d.rho) / theta2
+   K3 <- solve(AR_inv) %*% d.rho
+   
+   b11 <- sum(diag((diag(N) - K1.lat) %*% (diag(N) - K1.lat))) / theta2^2
+   b12 <- -sum(diag((diag(N) - K1.lat) %*% (diag(N) - K1.lat) %*% K3.lat)) / theta2
+   b22 <- sum(diag((K2.lat - K3.lat) %*% (K2.lat - K3.lat)))
+   varmat <- 2 * solve(matrix(c(b11, b12, b12, b22), ncol = 2))
+   eAR_var <- cbind(c(theta2, rho), sqrt(diag(varmat)), 2 * (1 - pnorm(abs(c(theta2, rho) / sqrt(diag(varmat))))))
+   dimnames(eAR_var) <- list(c("theta2", "rho2"), c("estimate", "SE", "p-value"))
+   eAR_var <- round(eAR_var, 3)
+   return(list( ebeta = ebeta, V = V, eAR_var = eAR_var, basesurv=basesurv, time=sort(DF$t_stop), convergence=convergence ))
+}
+
+
+# 
+#' Estimate the variance component \eqn{\theta^2} and auto-regressive coefficient \eqn{\rho}
+#'
+#' @param ni A vector representing the number of events for each subject.
+#' @param tau 
+#' @param rho \eqn{\rho} value at previous iteration
+#' @param J J matrix, return by IJK function
+#' @param K K matrix, returned by IJK function
+#'
+#' @returns estimation for \eqn{\theta^2} and \eqn{\rho}
+#' @export
+calculate_variance_components <- function(ni, tau, rho, J, K) {
+   ## calculate A1, A2, A3
+   A1 <- sum(diag(tau))
+   A2 <- sum(diag(J %*% tau)) / 2
+   A3 <- sum(diag(K %*% tau))
+   
+   ## calculate B1, B2, B3, B4
+   B1 <- (N - M) * (A1 - A3)
+   B2 <- (2 * M - N) * A2
+   B3 <- N * A3 - (N + M) * A1
+   B4 <- N * A2
+   
+   ## estimate rho and theta
+   rho0 <- (rho - (B1*rho^3 + B2*rho^2 + B3*rho + B4) / (3*B1*rho^2 + 2*B2*rho + B3))
+   theta20 <- (1/N) * ((1 + rho0^2)*A1 - 2*rho0*A2 - (rho0^2)*A3)
+   list(rho = rho0, theta2 = theta20)
+}
+
+
+#' Estimate I J K matrices are used for the estimation of AR(1) correlation structure
+#'
+#' @param ni A vector representing the number of events for each subject.
+#'
+#' @returns I, J, K matrices
+#' @export
+IJK <- function(ni) {
+   N <- sum(ni) # total number of observations
+   
+   ## I
+   I <- diag(N)
+   
+   ## J
+   J <- diag(0, N)
+   diag(J[,-1]) <- 1 
+   diag(J[-1,]) <- 1
+   
+   ## K
+   K <- diag(N)
+   counter <- c(0,cumsum(ni))
+   for(k in 1:length(ni)){
+      if(ni[k]==1){ K[counter[k]+1,counter[k]+1] = 2 }
+      else if(ni[k]>2) { K[counter[k]+1+1:(ni[k]-2),counter[k]+1+1:(ni[k]-2)] = 0 }
+   }
+   list(I = I, J = J, K = K) # all have dimension N by N
 }
