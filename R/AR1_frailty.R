@@ -1,4 +1,4 @@
-#' Main function
+#' Fit the Functional Regression with AutoregressIve fraiLTY (FRAILTY) model
 #' 
 #' @param formula A Event formula, with the response on the left of a ~ operator, 
 #' and scalar covariates on the right. The response must be a Event object using Event function. 
@@ -11,7 +11,7 @@
 #' @returns A AR1_FRAILTY object
 #' @export
 #'
-#' @examples AR1_FRAILTY(Event(t_start, t_stop, id, status) ~ z1, data=surv_data, scores=scores, para0=c(0.5, 0,5))
+#' @examples AR1_FRAILTY(Event(t_start, t_stop, id, status) ~ z1, data=surv_data, fpca_obj=fpca_obj, para0=c(0.5, 0,5))
 AR1_FRAILTY <- function(formula, 
                         data, 
                         fpca_obj, 
