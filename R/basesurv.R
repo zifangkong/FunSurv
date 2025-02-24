@@ -1,8 +1,8 @@
 #' A function to obtain the baseline survival function
 #'
-#' @param A AR1 FRAILTY object
+#' @param object An AR1 FRAILTY object
 #'
-#' @returns a data frame including time and baseline survival
+#' @returns A data frame including time and baseline survival
 #' @export
 
 basesurv <- function(object){
