@@ -56,7 +56,7 @@ AR1_PACE <- function(fun_data, surv_data, nbasis = 10, pve = 0.90,
   x_FunObject <- irregFunData(argvals = argvals, X = xList)
   
   ## apply functional principal component analyssis conditional expectation to the functional object
-  uni.PACE <- MFPCA::.PACE(x_FunObject, nbasis=nbasis, pve=pve)
+  uni.PACE <- MFPCA::PACE(x_FunObject, nbasis=nbasis, pve=pve)
   
   sigma2 <- uni.PACE$sigma2
   argvals_irregular <- uni.PACE$mu@argvals[[1]]
