@@ -62,6 +62,9 @@ This function calculates the FPC scores associated with each event gap time by
 \code{PACE} in package \strong{MFPCA}.
 }
 }
+\examples{
+AR1_PACE(Event(fun_data, surv_data, nbasis=10, pve=0.9)
+}
 \seealso{
 \code{\link[funData]{funData}}, \code{\link{fpcaBasis}}, \code{\link{univDecomp}}
 }
