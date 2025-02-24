@@ -11,7 +11,7 @@
 #' @returns A AR1_FRAILTY object
 #' @export
 #'
-#' @examples AR1_FRAILTY(Event(t_start, t_stop, id, status) ~ z1, data=surv_data, fpca_obj=fpca_obj, para0=c(0.5, 0,5))
+#' @examples AR1_FRAILTY(formula=Event(t_start, t_stop, id, status) ~ z1, data=surv_data, fpca_obj=fpca, para0=c(0.5, 0.5))
 AR1_FRAILTY <- function(formula, 
                         data, 
                         fpca_obj, 
@@ -86,7 +86,6 @@ AR1_FRAILTY <- function(formula,
          Svec <- as.vector(c(dl.dbeta, dl.dV))
          par <- par0 + tcrossprod(H2, t(Svec))
          if (max(abs(par - par0)) < eps) {
-            convergence <- 1
             break
          }
          
@@ -118,17 +117,25 @@ AR1_FRAILTY <- function(formula,
    dimnames(ebeta) <- list(c(covariates, colnames(scores)), c("Estimate", "SE", "p-value"))
    
    ## SE for the variance components
-   d.rho <- 2 * rho * ijk$I - ijk$J - 2 * rho * ijk$K
-   K1 <- tcrossprod(H2[(p + 1):(p + N), (p + 1):(p + N)], t(AR_inv)) / theta2
-   K2 <- tcrossprod(H2[(p + 1):(p + N), (p + 1):(p + N)], t(d.rho)) / theta2
-   K3 <- solve(AR_inv) %*% d.rho
+   block_list <- lapply(ni, function(ni) ar1_cor(ni, rho))
+   U <- Matrix::bdiag(block_list)  # Sparse block diagonal matrix
+   U <- as.matrix(U)
+   Q1 <- MASS::ginv(dll.eta) + theta2 * R %*% U %*% t(R)
    
-   b11 <- sum(diag((diag(N) - K1) %*% (diag(N) - K1))) / theta2^2
-   b12 <- -sum(diag((diag(N) - K1) %*% (diag(N) - K1) %*% K3)) / theta2
-   b22 <- sum(diag((K2 - K3) %*% (K2 - K3)))
+   U.inv <- Matrix::bdiag(lapply(ni, function(ni) dar1_cor.drho(ni, rho))) 
+   U.inv <- as.matrix(U.inv)
+   dQ1.theta2 <- R %*% U %*% t(R)
+   dQ1.rho <- theta2 * R %*% U.inv %*% t(R)
+   Q2 <- solve(Q1)  - solve(Q1) %*% X_surv %*% solve(t(X_surv) %*% solve(Q1) %*% X_surv) %*% t(X_surv) %*% solve(Q1)
+   b11 <- sum(diag(Q2 %*% dQ1.theta2 %*% Q2 %*% dQ1.theta2))
+   b12 <- sum(diag(Q2 %*% dQ1.theta2 %*% Q2 %*% dQ1.rho))
+   b22 <- sum(diag(Q2 %*% dQ1.rho %*% Q2 %*% dQ1.rho))
+   
    varmat <- 2 * solve(matrix(c(b11, b12, b12, b22), ncol = 2))
    eAR_var <- cbind(c(theta2, rho), sqrt(diag(varmat)), 2 * (1 - pnorm(abs(c(theta2, rho) / sqrt(diag(varmat))))))
    dimnames(eAR_var) <- list(c("theta2", "rho2"), c("estimate", "SE", "p-value"))
+   
+   
    print(ebeta)
    cat("-------------------------------\n")
    print(round(eAR_var, 3))
@@ -149,6 +156,8 @@ AR1_FRAILTY <- function(formula,
 #' @export
 #' @noRd
 calculate_variance_components <- function(ni, tau, rho, J, K) {
+   N <- sum(ni)
+   M <- length(ni)
    ## calculate A1, A2, A3
    A1 <- sum(diag(tau))
    A2 <- sum(diag(J %*% tau)) / 2
