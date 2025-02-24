@@ -160,6 +160,8 @@ AR1_FRAILTY <- function(formula,
 #' @export
 #' @noRd
 calculate_variance_components <- function(ni, tau, rho, J, K) {
+   N <- sum(ni)
+   M <- length(ni)
    ## calculate A1, A2, A3
    A1 <- sum(diag(tau))
    A2 <- sum(diag(J %*% tau)) / 2
@@ -185,23 +187,52 @@ calculate_variance_components <- function(ni, tau, rho, J, K) {
 #' @returns I, J, K matrices
 #' @export
 #' @noRd
-IJK <- function(ni) {
+IJK <- function(ni){
+   dp <- max(ni)
    N <- sum(ni) # total number of observations
-   
-   ## I
-   I <- diag(N)
-   
-   ## J
-   J <- diag(0, N)
-   diag(J[,-1]) <- 1 
-   diag(J[-1,]) <- 1
-   
-   ## K
-   K <- diag(N)
+   I <- diag(N) # Identity matrix
+   K <- diag(N) # identity matrix
+   J <- diag(0,N)# all 0 matrix
+   ln <- length(ni) # number of subjects
    counter <- c(0,cumsum(ni))
-   for(k in 1:length(ni)){
-      if(ni[k]==1){ K[counter[k]+1,counter[k]+1] = 2 }
-      else if(ni[k]>2) { K[counter[k]+1+1:(ni[k]-2),counter[k]+1+1:(ni[k]-2)] = 0 }
+   # K
+   if(ln==1&dp==1){
+      K[1,1] = 2
+   }else{
+      for(i in 1:ln){
+         if(ni[i]==1) {K[counter[i]+1,counter[i]+1] <- 2}
+         else if(ni[i]>2) {K[counter[i]+1+1:(ni[i]-2),counter[i]+1+1:(ni[i]-2)] <- 0}
+      }
    }
-   list(I = I, J = J, K = K) # all have dimension N by N
+   # J
+   if(dp>1){
+      Jp = diag(0,dp)
+      for(j in 2:dp) Jp[j-1,j] <- 1
+      for(i in 2:dp) Jp[i,i-1] <- 1
+      for(i in 1:ln){
+         if(ni[i]>1)
+            J[counter[i]+1:ni[i],counter[i]+1:ni[i]] <- Jp[1:ni[i],1:ni[i]]
+      }
+   }
+   list(I=I,J=J,K=K) # all have dimension N by N
 }
+# IJK <- function(ni) {
+#    N <- sum(ni) # total number of observations
+#    
+#    ## I
+#    I <- diag(N)
+#    
+#    ## J
+#    J <- diag(0, N)
+#    diag(J[,-1]) <- 1 
+#    diag(J[-1,]) <- 1
+#    
+#    ## K
+#    K <- diag(N)
+#    counter <- c(0,cumsum(ni))
+#    for(k in 1:length(ni)){
+#       if(ni[k]==1){ K[counter[k]+1,counter[k]+1] = 2 }
+#       else if(ni[k]>2) { K[counter[k]+1+1:(ni[k]-2),counter[k]+1+1:(ni[k]-2)] = 0 }
+#    }
+#    list(I = I, J = J, K = K) # all have dimension N by N
+# }
