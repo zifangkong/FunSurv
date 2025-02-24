@@ -36,7 +36,7 @@ citation("FunSurv")
 
 ### Online documentation
 
-Add a vignette
+https://github.com/zifangkong/FunSurv/blob/master/vignettes/funSurv-AR1_FRAILTY.html
 
 ### References:
 
