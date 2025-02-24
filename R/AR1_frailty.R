@@ -3,18 +3,18 @@
 #' @param formula A Event formula, with the response on the left of a ~ operator, 
 #' and scalar covariates on the right. The response must be a Event object using Event function. 
 #' @param data A data frame, including time-to-event outcomes, and scalar coefficients
-#' @param scores A data frame of FPC scores, returned by the AR1_PACE function
+#' @param fpca_obj A FPCA object returned by the AR1_PACE function
 #' @param para0 Initial values for \eqn{\theta^2} and auto-regressive coefficient \eqn{\rho}.
 #' @param iter.max Maximum number of iterations for both inner iteration and outer iteration. Defaults to \code{50}.
 #' @param eps Tolerance criteria for a possible infinite coefficient value. Defaults to \code{1e-6.}
 #'
-#' @returns A AR1_frailty object
+#' @returns A AR1_FRAILTY object
 #' @export
 #'
-#' @examples AR1_frailty(Event(t_start, t_stop, id, status) ~ z1, data=surv_data, scores=scores, para0=c(0.5, 0,5))
-AR1_frailty <- function(formula, 
+#' @examples AR1_FRAILTY(Event(t_start, t_stop, id, status) ~ z1, data=surv_data, scores=scores, para0=c(0.5, 0,5))
+AR1_FRAILTY <- function(formula, 
                         data, 
-                        scores, 
+                        fpca_obj, 
                         para0, 
                         iter.max=50, 
                         eps=1e-6) {
@@ -23,7 +23,7 @@ AR1_frailty <- function(formula,
    
    if (missing(data)) stop("A dataset of time-to-event outcomes is required.")
    
-   if (missing(scores)) stop("A dataset of FPC scores, returned by the AR1_PACE function is required.")
+   if (missing(fpca_obj)) stop("A FPC object, returned by the AR1_PACE function is required.")
    
    if (missing(para0)) stop("Initial values for theta^2 and rho are required")
    
@@ -34,6 +34,7 @@ AR1_frailty <- function(formula,
    # extract data
    DF <- model.frame(reformulate(c(response, covariates)), data)
    
+   scores <- fpca_obj$window_scores_fpca
    if(nrow(DF) != nrow(scores)) stop("Dimension of data does not match with the dimension of FPC scores")
    DF <- cbind(DF, scores)
    colnames(DF) <- c("t_start", "t_stop", "id", "status", covariates, paste0("score", seq(ncol(scores))))
@@ -60,8 +61,8 @@ AR1_frailty <- function(formula,
    beta0 <- rep(0, p)
    V0 <- rep(0, N)
    par0 <- c(beta0, V0)
-   rho0 <- params[1]
-   theta20 <- params[2]
+   rho0 <- para0[1]
+   theta20 <- para0[2]
    eps <- 1e-6
    convergence <- 0
 
@@ -72,15 +73,15 @@ AR1_frailty <- function(formula,
       H22[(p + 1):(p + N), (p + 1):(p + N)] <- AR_inv / theta20
       
       for (inner.iter in 1:iter.max) {
-         eta <- as.vector(X_surv %*% beta0 + R %*% V0)
+         eta <- as.vector(crossprod(t(XX), par0))
          
          ######################################################
          w <- diag(as.vector(exp(eta)))
-         A <- diag(as.vector(indi / (t(W) %*% (exp(eta)))))
+         A <- diag(as.vector(indi / crossprod(W, exp(eta)) ))
          B <- diag(as.vector(W %*% A %*% rep(1, N)))
          dll.eta <- w %*% B - w %*% W %*% A %*% A %*% t(W) %*% w # second derivative wrt eta
          dl.eta <- as.vector(indi - w %*% W %*% A %*% rep(1, N)) # first derivative wrt eta
-         dl.dbeta <- t(X_surv) %*% dl.eta
+         dl.dbeta <- crossprod(X_surv, dl.eta)
          dl.dV <- crossprod(R, dl.eta) - (1 / theta20) * (AR_inv %*% V0)
          H2 <- solve(crossprod(XX, dll.eta) %*% XX + H22)
          Svec <- as.vector(c(dl.dbeta, dl.dV))
@@ -132,14 +133,17 @@ AR1_frailty <- function(formula,
    K2 <- (H2[(p + 1):(p + N), (p + 1):(p + N)] %*% d.rho) / theta2
    K3 <- solve(AR_inv) %*% d.rho
    
-   b11 <- sum(diag((diag(N) - K1.lat) %*% (diag(N) - K1.lat))) / theta2^2
-   b12 <- -sum(diag((diag(N) - K1.lat) %*% (diag(N) - K1.lat) %*% K3.lat)) / theta2
-   b22 <- sum(diag((K2.lat - K3.lat) %*% (K2.lat - K3.lat)))
+   b11 <- sum(diag((diag(N) - K1) %*% (diag(N) - K1))) / theta2^2
+   b12 <- -sum(diag((diag(N) - K1) %*% (diag(N) - K1) %*% K3)) / theta2
+   b22 <- sum(diag((K2 - K3) %*% (K2 - K3)))
    varmat <- 2 * solve(matrix(c(b11, b12, b12, b22), ncol = 2))
    eAR_var <- cbind(c(theta2, rho), sqrt(diag(varmat)), 2 * (1 - pnorm(abs(c(theta2, rho) / sqrt(diag(varmat))))))
    dimnames(eAR_var) <- list(c("theta2", "rho2"), c("estimate", "SE", "p-value"))
    eAR_var <- round(eAR_var, 3)
-   return(list( ebeta = ebeta, V = V, eAR_var = eAR_var, basesurv=basesurv, time=sort(DF$t_stop), convergence=convergence ))
+   print(ebeta)
+   cat("-------------------------------\n")
+   print(eAR_var)
+   return(list( ebeta = ebeta, V = V, eAR_var = eAR_var, basesurv=basesurv, time=sort(DF$t_stop), PACE=fpca_obj$uni.PACE))
 }
 
 
@@ -154,6 +158,7 @@ AR1_frailty <- function(formula,
 #'
 #' @returns estimation for \eqn{\theta^2} and \eqn{\rho}
 #' @export
+#' @noRd
 calculate_variance_components <- function(ni, tau, rho, J, K) {
    ## calculate A1, A2, A3
    A1 <- sum(diag(tau))
@@ -179,6 +184,7 @@ calculate_variance_components <- function(ni, tau, rho, J, K) {
 #'
 #' @returns I, J, K matrices
 #' @export
+#' @noRd
 IJK <- function(ni) {
    N <- sum(ni) # total number of observations
    
