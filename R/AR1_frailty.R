@@ -63,7 +63,6 @@ AR1_FRAILTY <- function(formula,
    par0 <- c(beta0, V0)
    rho0 <- para0[1]
    theta20 <- para0[2]
-   eps <- 1e-6
    convergence <- 0
 
    
@@ -119,15 +118,6 @@ AR1_FRAILTY <- function(formula,
    dimnames(ebeta) <- list(c(covariates, colnames(scores)), c("Estimate", "SE", "p-value"))
    
    ## SE for the variance components
-   # block_list <- lapply(ni, function(ni) ar1_cor(ni, rho))
-   # A <- bdiag(block_list)  # Sparse block diagonal matrix
-   # A <- as.matrix(A)
-   # Q1 <- dll.eta + theta2 * R %*% A %*% t(R)
-   # dQ1.theta2 <- R %*% A %*% t(R)
-   # dQ1.rho <- 
-   # Q2 <- solve(Q1)  - solve(Q1) %*% X_surv %*% solve(t(X_surv) %*% solve(Q1) %*% X_surv) %*% t(X_surv) %*% solve(Q1)
-   # b11 <- sum(diag(Q2 %*% ))
-   
    d.rho <- 2 * rho * ijk$I - ijk$J - 2 * rho * ijk$K
    K1 <- (H2[(p + 1):(p + N), (p + 1):(p + N)] %*% AR_inv) / theta2
    K2 <- (H2[(p + 1):(p + N), (p + 1):(p + N)] %*% d.rho) / theta2
@@ -188,51 +178,32 @@ calculate_variance_components <- function(ni, tau, rho, J, K) {
 #' @export
 #' @noRd
 IJK <- function(ni){
-   dp <- max(ni)
-   N <- sum(ni) # total number of observations
-   I <- diag(N) # Identity matrix
-   K <- diag(N) # identity matrix
-   J <- diag(0,N)# all 0 matrix
-   ln <- length(ni) # number of subjects
+   N <- sum(ni)
+   M <- length(ni)
    counter <- c(0,cumsum(ni))
-   # K
-   if(ln==1&dp==1){
-      K[1,1] = 2
-   }else{
-      for(i in 1:ln){
-         if(ni[i]==1) {K[counter[i]+1,counter[i]+1] <- 2}
-         else if(ni[i]>2) {K[counter[i]+1+1:(ni[i]-2),counter[i]+1+1:(ni[i]-2)] <- 0}
+   
+   ## I
+   I <- diag(N) 
+   
+   ## J
+   J <- diag(0,N)
+   if(max(ni)>1){
+      maxJ <- diag(0,max(ni))
+      diag(maxJ[,-1]) <- 1
+      diag(maxJ[-1,]) <- 1
+      for(i in 1:M){
+         if(ni[i]>1) J[counter[i]+1:ni[i],counter[i]+1:ni[i]] <- maxJ[1:ni[i],1:ni[i]]
       }
    }
-   # J
-   if(dp>1){
-      Jp = diag(0,dp)
-      for(j in 2:dp) Jp[j-1,j] <- 1
-      for(i in 2:dp) Jp[i,i-1] <- 1
-      for(i in 1:ln){
-         if(ni[i]>1)
-            J[counter[i]+1:ni[i],counter[i]+1:ni[i]] <- Jp[1:ni[i],1:ni[i]]
-      }
+   
+   ## K
+   K <- diag(N)
+   counter <- c(0,cumsum(ni))
+   for(k in 1:length(ni)){
+      if(ni[k]==1){ K[counter[k]+1,counter[k]+1] = 2 }
+      else if(ni[k]>2) { K[counter[k]+1+1:(ni[k]-2),counter[k]+1+1:(ni[k]-2)] = 0 }
    }
-   list(I=I,J=J,K=K) # all have dimension N by N
+   
+   list(I=I,J=J,K=K)
 }
-# IJK <- function(ni) {
-#    N <- sum(ni) # total number of observations
-#    
-#    ## I
-#    I <- diag(N)
-#    
-#    ## J
-#    J <- diag(0, N)
-#    diag(J[,-1]) <- 1 
-#    diag(J[-1,]) <- 1
-#    
-#    ## K
-#    K <- diag(N)
-#    counter <- c(0,cumsum(ni))
-#    for(k in 1:length(ni)){
-#       if(ni[k]==1){ K[counter[k]+1,counter[k]+1] = 2 }
-#       else if(ni[k]>2) { K[counter[k]+1+1:(ni[k]-2),counter[k]+1+1:(ni[k]-2)] = 0 }
-#    }
-#    list(I = I, J = J, K = K) # all have dimension N by N
-# }
+
