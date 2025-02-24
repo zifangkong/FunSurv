@@ -38,6 +38,8 @@ AR1_frailty <- function(dat, theta20, rho20, itmax) {
   eta <- as.vector(X_surv %*% beta0 + R %*% V)
   flag.var <- 0
   eps.reg <- eps.var <- 0.00001
+  
+  
   for (outer.iter in 1:itmax) {
     ## itmax is user-defined max number of iterations
     flag.reg <- 0
