@@ -19,3 +19,19 @@ ar1_cor <- function(n, rho) {
 ##   rho^exponent / (1 - rho^2)
 ## }
 
+
+
+
+#' First derivative of AR(1) correlation matrix with respect to the auto-regressive coefficient
+#'
+#' @param n number of events for each subject
+#' @param rho autoregressive correlation
+#'
+#' @returns A n by n inverse matrix
+#' @export
+dar1_cor.drho <- function(n, rho) {
+   d <- c(n, n)
+   idx <- abs(.col(d) - .row(d))
+   numerator <- idx * rho^(idx - 1) * (1 - rho^2) + 2 * rho * rho^(idx)
+   return(numerator / (1 - rho^2)^2)
+}
