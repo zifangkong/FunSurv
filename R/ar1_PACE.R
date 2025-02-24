@@ -1,11 +1,11 @@
-#' This function calculates the event-specific FPC scores by 
-#' Estimate the FPC scores associated with each event gap time
-#' 1) first calculating the overall FPC scoresp
-#' 2) then estimating the FPC scores associated with each event gap time
+#' Calculate event-specific FPC scores
 #' 
+#' This function works only for univariate functional data.
+#' This function calculates the FPC scores associated with each event gap time by 
+#' 1) calculating the overall FPC scores
+#' 2) estimating the event-specific FPC scores 
 #' \code{fpca.sc} in package \strong{refund}.
 #' \code{PACE} in package \strong{MFPCA}.
-#' @section This function works only for univariate functional data 
 #'   
 #' @param funDataObject An object of class \code{\link[funData]{funData}} or 
 #'   \code{\link[funData]{irregFunData}} containing the functional data 
@@ -13,10 +13,6 @@
 #'   calculated. If the data is sampled irregularly (i.e. of class 
 #'   \code{\link[funData]{irregFunData}}), \code{funDataObject} is transformed 
 #'   to a \code{\link[funData]{funData}} object first.
-#' @param predData  An object of class \code{\link[funData]{funData}}, for which
-#'   estimated trajectories based on a truncated Karhunen-Loeve representation 
-#'   should be estimated. Defaults to \code{NULL}, which implies prediction for 
-#'   the given data.
 #' @param nbasis An integer, representing the number of  B-spline basis 
 #'   functions used for estimation of the mean function and bivariate smoothing 
 #'   of the covariance surface. Defaults to \code{10} (cf. 
@@ -39,13 +35,13 @@
 #' @return \item{scores}{An matrix of estimated event-specific scores for the 
 #'   observations in \code{funDataObject}. Each row corresponds to the scores of
 #'   one observation.}
-#'   
+#' @return \item{uni.PACE}{A univariate functional principal components analysis}
 #' @seealso \code{\link[funData]{funData}}, \code{\link{fpcaBasis}}, \code{\link{univDecomp}}
 #' @import MFPCA
-#' @export ar1_PACE
+#' @export AR1_PACE
 #'   
 
-AR1_PACE <- function(fun_data, surv_data, predData = NULL, nbasis = 10, pve = 0.99,
+AR1_PACE <- function(fun_data, surv_data, nbasis = 10, pve = 0.90,
                      npc = NULL, makePD = FALSE, cov.weight.type = "none"){
   if(length(unique(surv_data$id)) > length(unique(fun_data$id))){
     removed_subj = unique(surv_data$id)[! unique(surv_data$id) %in% unique(fun_data$id)]
@@ -60,7 +56,7 @@ AR1_PACE <- function(fun_data, surv_data, predData = NULL, nbasis = 10, pve = 0.
   x_FunObject <- irregFunData(argvals = argvals, X = xList)
   
   ## apply functional principal component analyssis conditional expectation to the functional object
-  uni.PACE <- MFPCA::PACE(x_FunObject, nbasis=nbasis, pve=pve)
+  uni.PACE <- MFPCA::.PACE(x_FunObject, nbasis=nbasis, pve=pve)
   
   sigma2 <- uni.PACE$sigma2
   argvals_irregular <- uni.PACE$mu@argvals[[1]]
@@ -111,7 +107,7 @@ AR1_PACE <- function(fun_data, surv_data, predData = NULL, nbasis = 10, pve = 0.
     counter <- counter + length(scores)
   }
   colnames(window_scores_fpca) <- paste0("score", seq(npc))
-  return(window_scores_fpca)
+  return(list(window_scores_fpca=window_scores_fpca, uni.PACE=uni.PACE))
 }
 
 
