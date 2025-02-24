@@ -30,6 +30,9 @@ knitr::opts_chunk$set(
 In this vignette, we aim to demonstrate how to use our package to jointly analyze longitudinal and recurrent event data using functional regression approach with autoregressive frailty. 
 
 ```{r load-pkg, message = FALSE}
+library(devtools)
+load_all()
+library(MFPCA)
 library(FunSurv)
 packageVersion("FunSurv")
 ```
@@ -63,7 +66,7 @@ We used a two-step procedure to fit the joint model.
 
 First, we apply the functional principal component analysis (FPCA) for the longitudinal outcome and obtain the event-specific FPC scores. The calculation of event-specific FPC scores involves 1) calculate the overall FPC scores using *PACE* function in the **MFPCA** package (@mfpca); 2) incorporate the overall FPC scores to obtain the event-specific FPC scores.
 ```{r PACE_args}
-# args(AR1_PACE)
+args(AR1_PACE)
 ```
 
 * `fun_data` is data frame containing longitudinal measurements.
@@ -77,10 +80,10 @@ estimating the mean function and performing bivariate smoothing of the covarianc
 
 
 ```{r PACE}
-# fpca = AR1_PACE(fun_data, surv_data, nbasis=10, pve=0.9)
-# head(fpca$window_scores_fpca)
-# plot(fpca$uni.PACE$functions, xlab = "Follow-up time", lwd = 3, col = c("blue4","violet", "orange1"))
-# legend("bottomright", col = c("blue4","violet", "orange1"), lty = 1, lwd = 3, bty = "n", cex = 1, legend = c("FPC1", "FPC2", "FPC3"))
+fpca = AR1_PACE(fun_data, surv_data, nbasis=10, pve=0.9)
+head(fpca$window_scores_fpca)
+plot(fpca$uni.PACE$functions, xlab = "Follow-up time", lwd = 3, col = c("blue4","violet", "orange1"))
+legend("bottomright", col = c("blue4","violet", "orange1"), lty = 1, lwd = 3, bty = "n", cex = 1, legend = c("FPC1", "FPC2", "FPC3"))
 ```
 
 By fitting the *AR1_PACE* function, we obtain a data frame of 3 columns of FPC scores, where each column corresponds to a leading functional principal component. 
@@ -89,7 +92,7 @@ By fitting the *AR1_PACE* function, we obtain a data frame of 3 columns of FPC s
 ### Step 2
 In the second step, we incorporate the FPC scores obtained from the previous step, and 
 ```{r}
-# args(AR1_FRAILTY)
+args(AR1_FRAILTY)
 ```
 * `formula` A Event formula, with the response on the left of a ~ operator, and scalar covariates on the right. The response must be a Event object using Event function.
 * `data` A data frame, including time-to-event outcomes, and scalar coefficients
@@ -99,8 +102,8 @@ In the second step, we incorporate the FPC scores obtained from the previous ste
 * `eps` Tolerance criteria for a possible infinite coefficient value.
 
 ```{r}
-# surv_data = surv_data[surv_data$id %in% fun_data$id, ]
-# model = AR1_FRAILTY(formula=Event(t_start, t_stop, id, status) ~ z1, data=surv_data, fpca_obj=fpca, para0=c(0.5, 0.5))
+surv_data = surv_data[surv_data$id %in% fun_data$id, ]
+model = AR1_FRAILTY(formula=Event(t_start, t_stop, id, status) ~ z1, data=surv_data, fpca_obj=fpca, para0=c(0.5, 0.5))
 ```
 
 
@@ -108,6 +111,6 @@ In the second step, we incorporate the FPC scores obtained from the previous ste
 
 The functional coefficient $\beta(t)$ can be plotted via `plot()`:
 ```{r plot-betat}
-# plot_beta(model)
+plot_beta(model)
 ```
 
