@@ -15,7 +15,7 @@ AR1_frailty <- function(dat, theta20, rho20, itmax) {
   M <- length(unique(patient)) #  number of unique subjects
   R <- diag(N) # N by N identity matrix
   ni <- table(dat[, 1]) # number of observations per subject
-  IJK <- IJK(ni)
+  ijk <- IJK(ni)
   RR <- cbind(dat, R)
   RR_sorted <- RR[sort.list(RR[, 2]), ] # sort by gap time (to get distinct gap time)
   indi <- as.vector(RR_sorted[, 3]) # corresponding event indicator (1 for event, 0 for censored)
@@ -41,7 +41,7 @@ AR1_frailty <- function(dat, theta20, rho20, itmax) {
   for (outer.iter in 1:itmax) {
     ## itmax is user-defined max number of iterations
     flag.reg <- 0
-    ob3 <- get_G_inv(rho20, IJK$I, IJK$J, IJK$K)
+    ob3 <- get_G_inv(rho20, ijk$I, ijk$J, ijk$K)
     UG2 <- diag(0, (p + N))
     UG2[(p + 1):(p + N), (p + 1):(p + N)] <- ob3$IR / theta20
     
@@ -79,7 +79,7 @@ AR1_frailty <- function(dat, theta20, rho20, itmax) {
     
     ####### Variance parameter##################
     tau2 <- (V %*% t(V) + H2[(p + 1):(p + N), (p + 1):(p + N)])
-    objQ <- get_survival_params(tau2, ni, rho20, IJK$J, IJK$K)
+    objQ <- get_survival_params(tau2, ni, rho20, ijk$J, ijk$K)
     rho2 <- objQ$rho2
     theta2 <- objQ$theta2
     if (max(abs(c((theta2 - theta20), (rho2 - rho20)))) < eps.var) {
