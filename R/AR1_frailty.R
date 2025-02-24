@@ -6,7 +6,7 @@
 #' @param fpca_obj A FPCA object returned by the AR1_PACE function
 #' @param para0 Initial values for \eqn{\theta^2} and auto-regressive coefficient \eqn{\rho}.
 #' @param iter.max Maximum number of iterations for both inner iteration and outer iteration. Defaults to \code{50}.
-#' @param eps Tolerance criteria for a possible infinite coefficient value. Defaults to \code{1e-6.}
+#' @param eps Tolerance criteria for a possible infinite coefficient value. Defaults to \code{1e-6}.
 #'
 #' @returns A AR1_FRAILTY object
 #' @export
@@ -50,9 +50,9 @@ AR1_FRAILTY <- function(formula,
    ijk <- IJK(ni)
    DF_sorted <- DF[order(DF$gap_time), ]  # Sort by gap time
    indi <- as.vector(DF_sorted$status)  # Event indicator
-   X_surv <- as.matrix(DF_sorted[, c(covariates, paste0("score", seq(ncol(scores))))])  # Design matrix
+   X_surv <- as.matrix(DF_sorted[, c(covariates, paste0("score", seq(ncol(scores))))]) 
    R <- as.matrix(DF_sorted[, (ncol(DF_sorted)-ncol(R)+1):ncol(DF_sorted)])
-   XX <- cbind(X_surv, R)
+   XX <- cbind(X_surv, R) # design matrix
    W <- matrix(1, N, N)
    W[upper.tri(W)] <- 0
    H22 <- diag(0, (p + N)) ## initial of Hessian matrix
@@ -81,10 +81,10 @@ AR1_FRAILTY <- function(formula,
          dll.eta <- w %*% B - w %*% W %*% A %*% A %*% t(W) %*% w # second derivative wrt eta
          dl.eta <- as.vector(indi - w %*% W %*% A %*% rep(1, N)) # first derivative wrt eta
          dl.dbeta <- crossprod(X_surv, dl.eta)
-         dl.dV <- crossprod(R, dl.eta) - (1 / theta20) * (AR_inv %*% V0)
+         dl.dV <- crossprod(R, dl.eta) - (1 / theta20) * tcrossprod(AR_inv, t(V0))
          H2 <- solve(crossprod(XX, dll.eta) %*% XX + H22)
          Svec <- as.vector(c(dl.dbeta, dl.dV))
-         par <- par0 + H2 %*% Svec
+         par <- par0 + tcrossprod(H2, t(Svec))
          if (max(abs(par - par0)) < eps) {
             convergence <- 1
             break
@@ -110,7 +110,7 @@ AR1_FRAILTY <- function(formula,
    }
    
    ## baseline survival function
-   basesurv <- exp(-W %*% (indi / (t(W) %*% (exp(eta)))))
+   basesurv <- exp(-W %*% (indi / crossprod(W, exp(eta)) ))
    
    ## Calculate variance-covariance matrix using numerical Hessian
    se.beta <- sqrt(abs(diag(H2)[1:p]))
@@ -119,8 +119,8 @@ AR1_FRAILTY <- function(formula,
    
    ## SE for the variance components
    d.rho <- 2 * rho * ijk$I - ijk$J - 2 * rho * ijk$K
-   K1 <- (H2[(p + 1):(p + N), (p + 1):(p + N)] %*% AR_inv) / theta2
-   K2 <- (H2[(p + 1):(p + N), (p + 1):(p + N)] %*% d.rho) / theta2
+   K1 <- tcrossprod(H2[(p + 1):(p + N), (p + 1):(p + N)], t(AR_inv)) / theta2
+   K2 <- tcrossprod(H2[(p + 1):(p + N), (p + 1):(p + N)], t(d.rho)) / theta2
    K3 <- solve(AR_inv) %*% d.rho
    
    b11 <- sum(diag((diag(N) - K1) %*% (diag(N) - K1))) / theta2^2
@@ -129,10 +129,9 @@ AR1_FRAILTY <- function(formula,
    varmat <- 2 * solve(matrix(c(b11, b12, b12, b22), ncol = 2))
    eAR_var <- cbind(c(theta2, rho), sqrt(diag(varmat)), 2 * (1 - pnorm(abs(c(theta2, rho) / sqrt(diag(varmat))))))
    dimnames(eAR_var) <- list(c("theta2", "rho2"), c("estimate", "SE", "p-value"))
-   eAR_var <- round(eAR_var, 3)
    print(ebeta)
    cat("-------------------------------\n")
-   print(eAR_var)
+   print(round(eAR_var, 3))
    return(list( ebeta = ebeta, V = V, eAR_var = eAR_var, basesurv=basesurv, time=sort(DF$t_stop), PACE=fpca_obj$uni.PACE))
 }
 
@@ -150,8 +149,6 @@ AR1_FRAILTY <- function(formula,
 #' @export
 #' @noRd
 calculate_variance_components <- function(ni, tau, rho, J, K) {
-   N <- sum(ni)
-   M <- length(ni)
    ## calculate A1, A2, A3
    A1 <- sum(diag(tau))
    A2 <- sum(diag(J %*% tau)) / 2
