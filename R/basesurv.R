@@ -6,5 +6,5 @@
 #' @export
 
 basesurv <- function(object){
-   cbind(object$time, object$basesurv)
+   data.frame(time=object$time, basesurv=object$basesurv)
 }
