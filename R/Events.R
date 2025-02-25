@@ -7,6 +7,7 @@
 #'
 #' @return A structured list with event attributes
 #' @export
+#' @example inst/examples/ex_Events.R
 Events <- function(t_start, t_stop, id, status) {
    dat <- data.frame(id=id, t_start=t_start, t_stop=t_stop, status=status)
    sorted_dat <- dat[order(dat$id),]
