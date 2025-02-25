@@ -4,6 +4,7 @@
 #'
 #' @returns a plot of functional coefficient
 #' @export
+#' @example inst/examples/ex_plot_beta.R
 plot_beta <- function(object){
    npc <- object$PACE$npc
    beta <- crossprod(object$PACE$functions@X, object$ebeta[-(1:(nrow(object$ebeta) - npc)), 1])
