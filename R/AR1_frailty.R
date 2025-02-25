@@ -11,7 +11,7 @@
 #' @returns A AR1_FRAILTY object
 #' @export
 #'
-#' @examples AR1_FRAILTY(formula=Event(t_start, t_stop, id, status) ~ z1, data=surv_data, fpca_obj=fpca, para0=c(0.5, 0.5))
+#' @example inst/examples/ex_AR1_FRAILTY.R
 AR1_FRAILTY <- function(formula, 
                         data, 
                         fpca_obj, 
