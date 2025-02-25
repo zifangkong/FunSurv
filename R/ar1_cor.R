@@ -7,6 +7,9 @@
 #' 
 #' @export
 ar1_cor <- function(n, rho) {
+   # Check if rho is between 0 and 1
+   if (rho < 0 || rho > 1) stop("Error: rho must be between 0 and 1.")
+
   d <- c(n, n)
   rho^abs(.col(d) - .row(d)) / (1 - rho^2)
 }
@@ -30,6 +33,9 @@ ar1_cor <- function(n, rho) {
 #' @returns A n by n inverse matrix
 #' @export
 dar1_cor.drho <- function(n, rho) {
+   # Check if rho is between 0 and 1
+   if (rho < 0 || rho > 1) stop("Error: rho must be between 0 and 1.")
+   
    d <- c(n, n)
    idx <- abs(.col(d) - .row(d))
    numerator <- idx * rho^(idx - 1) * (1 - rho^2) + 2 * rho * rho^(idx)
