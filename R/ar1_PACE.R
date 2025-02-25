@@ -38,9 +38,9 @@
 #' @return \item{uni.PACE}{A univariate functional principal components analysis}
 #' @seealso \code{\link[funData]{funData}}, \code{\link{fpcaBasis}}, \code{\link{univDecomp}}
 #' @import MFPCA
-#' @export AR1_PACE
+#' @export
 #'   
-#' @examples AR1_PACE(Event(fun_data, surv_data, nbasis=10, pve=0.9)
+#' @examples inst/examples/ex_AR1_PACE.R
 AR1_PACE <- function(fun_data, surv_data, nbasis = 10, pve = 0.90,
                      npc = NULL, makePD = FALSE, cov.weight.type = "none"){
   if(length(unique(surv_data$id)) > length(unique(fun_data$id))){
