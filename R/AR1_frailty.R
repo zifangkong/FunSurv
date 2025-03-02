@@ -189,3 +189,4 @@ IJK <- function(ni){
    list(I=I,J=J,K=K)
 }
 
+is.funsurv <- function(x) inherits(x, "funsurv")
