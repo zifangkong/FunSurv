@@ -6,5 +6,6 @@
 #' @export
 
 basesurv <- function(object){
-   data.frame(time=object$time, basesurv=object$basesurv)
+  if (!is.funsurv(object)) stop("Must be a funsurv object")
+   data.frame(time = object$time, basesurv = object$basesurv)
 }

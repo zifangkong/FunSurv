@@ -37,77 +37,65 @@
 #'   one observation.}
 #' @return \item{uni.PACE}{A univariate functional principal components analysis}
 #' @seealso \code{\link[funData]{funData}}, \code{\link{fpcaBasis}}, \code{\link{univDecomp}}
-#' @import MFPCA
+#' @importFrom MFPCA PACE
+#' @importFrom funData .intWeights irregFunData
 #' @export AR1_PACE
 #'   
-#' @examples AR1_PACE(Event(fun_data, surv_data, nbasis=10, pve=0.9)
+#' @examples inst/examples/ex_AR1_FRAILTY.R
 AR1_PACE <- function(fun_data, surv_data, nbasis = 10, pve = 0.90,
                      npc = NULL, makePD = FALSE, cov.weight.type = "none"){
   if(length(unique(surv_data$id)) > length(unique(fun_data$id))){
     removed_subj = unique(surv_data$id)[! unique(surv_data$id) %in% unique(fun_data$id)]
     warning("Subjects" , paste0(removed_subj, collapse = ","), "were removed from analysis.")
   }
-  surv_data <- surv_data[which(surv_data$id %in% unique(fun_data$id)), ]
-  
+  surv_data <- surv_data[which(surv_data$id %in% unique(fun_data$id)), ]  
   ## transform fun_data to a functional data object
   data_split <- split(fun_data, fun_data$id)
   argvals <- lapply(data_split, function(df) df$time)
   xList <- lapply(data_split, function(df) df$x)
-  x_FunObject <- irregFunData(argvals = argvals, X = xList)
-  
+  x_FunObject <- irregFunData(argvals = argvals, X = xList)  
   ## apply functional principal component analyssis conditional expectation to the functional object
-  uni.PACE <- MFPCA::PACE(x_FunObject, nbasis=nbasis, pve=pve, npc = npc, makePD = makePD, cov.weight.type = cov.weight.type)
-  
+  uni.PACE <- PACE(x_FunObject, nbasis = nbasis, pve = pve, npc = npc, makePD = makePD,
+                   cov.weight.type = cov.weight.type)
   sigma2 <- uni.PACE$sigma2
   argvals_irregular <- uni.PACE$mu@argvals[[1]]
-  w0 <- funData::.intWeights(argvals_irregular, method = "trapezoidal")
-  npc <- uni.PACE$npc
-  
-  X_matrix <- uni.PACE$functions@X
-  
+  w0 <- .intWeights(argvals_irregular, method = "trapezoidal")
+  npc <- uni.PACE$npc  
+  X_matrix <- uni.PACE$functions@X  
   # function to calculate scores for one event gap time
   calculate_event_score <- function(obs_points) {
     if (length(obs_points) == 2 && obs_points[1] > obs_points[2]) {
       obs_points <- obs_points[2]
     }
-    
     if (sigma2 == 0 && length(obs_points) < npc) {
       stop("Measurement error estimated to be zero and there are fewer observed points than PCs; scores cannot be estimated.")
-    }
-    
-    # Extract relevant portions of X matrix
+    }    
+    ## Extract relevant portions of X matrix
     X_obs <- X_matrix[, obs_points, drop=FALSE]
     W_obs <- diag(w0)[obs_points, obs_points, drop=FALSE]
-    
-    # Calculate J_fpca_basis using tcrossprod
+    ## Calculate J_fpca_basis using tcrossprod
     J_fpca_basis <- X_obs %*% tcrossprod(W_obs, X_obs)
-    
-    # Return the scores
+    ## Return the scores
     tcrossprod(uni.PACE$scores[id,], J_fpca_basis)
   }
-  
-  window_scores_fpca = matrix(NA, nrow=nrow(surv_data), ncol=npc)
+  window_scores_fpca <- matrix(NA, nrow=nrow(surv_data), ncol=npc)
   counter <- 1
   for (id in seq_along(unique(surv_data$id))) {
     temp_df <- surv_data[surv_data$id == unique(surv_data$id)[id], ]
-    
-    # Vectorize the index calculation
+    ## Vectorize the index calculation
     idx <- c(0, vapply(temp_df$t_stop, function(x) {
       max(which(argvals_irregular <= x))
     }, FUN.VALUE = numeric(1)))
-    
-    # get observation points for each event time window
-    obs_points_list <- lapply(2:length(idx), function(i) { (idx[i-1] + 1):idx[i] })
-    
-    # calculate scores for each event time
+    ## get observation points for each event time window
+    obs_points_list <- lapply(2:length(idx), function(i) (idx[i-1] + 1):idx[i] )
+    ## calculate scores for each event time
     scores <- lapply(obs_points_list, calculate_event_score)
-    
-    # assign scores to result matrix
+    ## assign scores to result matrix
     window_scores_fpca[counter:(counter + length(scores) - 1), ] <- do.call(rbind, scores)
     counter <- counter + length(scores)
   }
   colnames(window_scores_fpca) <- paste0("score", seq(npc))
-  return(list(window_scores_fpca=window_scores_fpca, uni.PACE=uni.PACE))
+  return(list(window_scores_fpca = window_scores_fpca, uni.PACE = uni.PACE))
 }
 
 
