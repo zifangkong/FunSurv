@@ -8,6 +8,8 @@
 #' @param iter.max Maximum number of iterations for both inner iteration and outer iteration. Defaults to \code{50}.
 #' @param eps Tolerance criteria for a possible infinite coefficient value. Defaults to \code{1e-6}.
 #'
+#' @importFrom MASS ginv
+#' @importFrom Matrix bdiag
 #' @returns A AR1_FRAILTY object
 #' @export
 #'
