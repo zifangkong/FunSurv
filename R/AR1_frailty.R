@@ -8,7 +8,16 @@
 #' @param iter.max Maximum number of iterations for both inner iteration and outer iteration. Defaults to \code{50}.
 #' @param eps Tolerance criteria for a possible infinite coefficient value. Defaults to \code{1e-6}.
 #'
-#' @returns A AR1_FRAILTY object
+#' @returns A AR1_FRAILTY object. An object of "AR1_FRAILTY" is a list containing the following components:
+#'  \item{ebeta}{Estimation details of coefficients of scalar covariates and FPC scores. 
+#' Including estimated values, standard errors, and p-values}
+#'  \item{evar}{Estimation details of variance components (\eqn{\theta^2} and \eqn{\rho}). 
+#' Including estimated values, standard errors, and p-values}
+#'  \item{V}{Estimated frailty terms}
+#'  \item{basesurv}{Estimated baseline survival probability}
+#'  \item{time}{Time points associated with baseline survival probability}
+#'  \item{PACE}{Results of a Univariate Functional component analysis}
+#' 
 #' @export
 #'
 #' @example inst/examples/ex_AR1_FRAILTY.R
@@ -118,7 +127,7 @@ AR1_FRAILTY <- function(formula,
    
    ## SE for the variance components
    block_list <- lapply(ni, function(ni) ar1_cor(ni, rho))
-   U <- Matrix::bdiag(block_list)  # Sparse block diagonal matrix
+   U <- Matrix::bdiag(block_list)  # block diagonal matrix
    U <- as.matrix(U)
    Q1 <- MASS::ginv(dll.eta) + theta2 * R %*% U %*% t(R)
    
@@ -132,14 +141,15 @@ AR1_FRAILTY <- function(formula,
    b22 <- sum(diag(Q2 %*% dQ1.rho %*% Q2 %*% dQ1.rho))
    
    varmat <- 2 * solve(matrix(c(b11, b12, b12, b22), ncol = 2))
-   eAR_var <- cbind(c(theta2, rho), sqrt(diag(varmat)), 2 * (1 - pnorm(abs(c(theta2, rho) / sqrt(diag(varmat))))))
-   dimnames(eAR_var) <- list(c("theta2", "rho2"), c("estimate", "SE", "p-value"))
+   evar <- cbind(c(theta2, rho), sqrt(diag(varmat)), 2 * (1 - pnorm(abs(c(theta2, rho) / sqrt(diag(varmat))))))
+   dimnames(evar) <- list(c("theta2", "rho2"), c("estimate", "SE", "p-value"))
    
    
    print(ebeta)
    cat("-------------------------------\n")
-   print(round(eAR_var, 3))
-   return(list( ebeta = ebeta, V = V, eAR_var = eAR_var, basesurv=basesurv, time=sort(DF$t_stop), PACE=fpca_obj$uni.PACE))
+   print(round(evar, 3))
+   return(list( ebeta=ebeta, evar=evar, V=V, basesurv=basesurv, 
+                time=sort(DF$t_stop), PACE=fpca_obj$uni.PACE))
 }
 
 
