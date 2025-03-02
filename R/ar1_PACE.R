@@ -47,8 +47,7 @@ AR1_PACE <- function(fun_data, surv_data, nbasis = 10, pve = 0.90,
     removed_subj = unique(surv_data$id)[! unique(surv_data$id) %in% unique(fun_data$id)]
     warning("Subjects" , paste0(removed_subj, collapse = ","), "were removed from analysis.")
   }
-  surv_data <- surv_data[which(surv_data$id %in% unique(fun_data$id)), ]
-  
+  surv_data <- surv_data[which(surv_data$id %in% unique(fun_data$id)), ]  
   ## transform fun_data to a functional data object
   data_split <- split(fun_data, fun_data$id)
   argvals <- lapply(data_split, function(df) df$time)
@@ -109,7 +108,4 @@ AR1_PACE <- function(fun_data, surv_data, nbasis = 10, pve = 0.90,
   colnames(window_scores_fpca) <- paste0("score", seq(npc))
   return(list(window_scores_fpca=window_scores_fpca, uni.PACE=uni.PACE))
 }
-
-
-
 
