@@ -12,7 +12,7 @@
 #'   \item{t_end}{event end time}
 #'   \item{censoring_time}{event censoring time}
 #'   \item{status}{event status: status=1 if event observed and status=0 if event censored}
-#'   \item{z1}{a univariate scalar covariates. Can be extended to multiple scalar covariates}
+#'   \item{z1}{A univariate scalar covariates. Can be extended to multiple scalar covariates}
 #' }
 #' @description Functional data \code{fdat}
 #' \describe{
