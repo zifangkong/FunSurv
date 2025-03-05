@@ -7,7 +7,7 @@
 basesurv(object)
 }
 \arguments{
-\item{object}{An AR1 FRAILTY object}
+\item{object}{A funsurv object}
 }
 \value{
 A data frame including time and baseline survival
