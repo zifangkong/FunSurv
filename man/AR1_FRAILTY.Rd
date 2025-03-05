@@ -19,14 +19,14 @@ AR1_FRAILTY(
 )
 }
 \arguments{
-\item{formula}{A formula, with the response on the left of a ~ operator being a \code{Recur{object}} as returned by function \code{Recur} in \strong{reda},
+\item{formula}{A formula, with the response on the left of a ~ operator being a \code{Recur} object as returned by function \code{Recur} in \strong{reda},
 and scalar covariates on the right.}
 
 \item{sdat}{A data frame containing subject IDs,  time-to-event outcomes (starting time, end point, censoring time and event status), and scalar covariates}
 
 \item{fdat}{A data frame containing subject IDs, longitudinal measurements, and the corresponding time points for each measurement.}
 
-\item{para0}{Initial values for \eqn{\theta^2} and auto-regressive coefficient \eqn{\rho}. Both default to 0.5.}
+\item{para0}{A vector of initial values for \eqn{\theta^2} and auto-regressive coefficient \eqn{\rho}. Both default to 0.5.}
 
 \item{nbasis}{An integer, representing the number of B-spline basis functions
 used for estimation of the mean function and bivariate smoothing of the covariance surface.
@@ -55,7 +55,7 @@ points.}
 \item{eps}{Tolerance criteria for a possible infinite coefficient value. Defaults to \code{1e-6}.}
 }
 \value{
-A funsurv object. An object of "funsurv" is a list containing the following components:
+A funsurv object containing the following components:
 \item{beta}{Estimation of coefficients of scalar covariates and FPC scores.
 Including estimated values, standard errors, and p-values}
 \item{beta_vcov}{Estimated variance-covariance of the estimates of beta}
@@ -87,24 +87,17 @@ The hazard function is specified as
 \deqn{h(t; \boldsymbol{Z}_i, {X}_i(\cdot))=h_{0}(t-t_{i,j-1}) \exp \left(\eta_{ij}\right),}
 where \eqn{h_0(\cdot)} is the baseline hazard function,
 and \eqn{\eta_{ij} = \bm{\alpha}^{\top}\boldsymbol{Z}_i +\int_{t_{i, j-1}}^{t}{X}_{i}(s)\beta(s)ds + v_{ij}}.
-Here, \eqn{t_{i, j-1}} is the previous event time with $t_{i0} = 0$.
+Here, \eqn{t_{i, j-1}} is the previous event time with \eqn{t_{i0} = 0}.
 \eqn{\bm{\alpha}} is the fixed effect parameter associated with the time-invariant covariates \eqn{\boldsymbol{Z}_i},
 and \eqn{\beta(t)} is a time-varying coefficient that captures the effect of functional predictor \eqn{X_{i}(t)} on the hazard rate of recurrent events.
 }
 \examples{
 data(simDat)
 
-## Calculate event-specific FPC scores
-## 90\% leads to 3 FPC components
-fpc_obj <- AR1_PACE(fdat, sdat, nbasis = 10, pve = 0.9) 
-
-## Fit the functional regression with autoregressive frailty 
-fit <- AR1_FRAILTY(formula = Events(t_start, t_stop, id, status) ~ z1, data = sdat, fpca_obj = fpc_obj, para0 = c(0.5, 0.5))
-
+fit <- AR1_FRAILTY(formula=Recur(t_start \%to\% t_stop, id, event=status) ~ z1, sdat=sdat, fdat=fdat)
 
 str(basesurv(fit))
-
-fit
+print(fit)
 summary(fit)
 plot(fit)
 }
