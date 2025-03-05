@@ -8,7 +8,7 @@
 #' 
 #' @return A ggplot object ... 
 #' 
-#' @importFrom ggplot2 ggplot geom_ribbon aes geom_line xlab ylab
+#' @importFrom ggplot2 ggplot geom_ribbon aes geom_line xlab ylab labs
 #' @importFrom dplyr %>% 
 #' @importFrom tidyr pivot_longer
 #' @exportS3Method plot funsurv
