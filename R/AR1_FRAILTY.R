@@ -25,7 +25,7 @@
 #' and \eqn{\beta(t)} is a time-varying coefficient that captures the effect of functional predictor \eqn{X_{i}(t)} on the hazard rate of recurrent events.
 #' 
 #' 
-#' @param formula A formula, with the response on the left of a ~ operator being a \code{Recur{object}} as returned by function \code{Recur} in \strong{reda}, 
+#' @param formula A formula, with the response on the left of a ~ operator being a \code{Recur} object as returned by function \code{Recur} in \strong{reda}, 
 #' and scalar covariates on the right.
 #' @param sdat A data frame containing subject IDs,  time-to-event outcomes (starting time, end point, censoring time and event status), and scalar covariates
 #' @param fdat A data frame containing subject IDs, longitudinal measurements, and the corresponding time points for each measurement.
@@ -226,7 +226,6 @@ calculate_variance_components <- function(ni, tau, rho, J, K) {
    theta20 <- ((1 + rho0^2)*A1 - 2*rho0*A2 - (rho0^2)*A3) / N
    list(rho = rho0, theta2 = theta20)
 }
-
 
 #' Estimate I J K matrices are used for the estimation of AR(1) correlation structure
 #'
