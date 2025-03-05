@@ -4,12 +4,10 @@
 #' where \eqn{h_0(\cdot)} is the baseline hazard function generated from a Weibull distribution. \eqn{\eta_{ij} = \bm{\alpha}^{\top}\boldsymbol{Z}_i +\int_{t_{i, j-1}}^{t}{X}_{i}(s)\beta(s)ds + v_{ij}}. 
 #' \eqn{\bm{\alpha}} is the fixed effect parameter associated with the time-invariant covariates \eqn{\boldsymbol{Z}_i}, 
 #' and \eqn{\beta(t)} is a time-varying coefficient that captures the effect of functional predictor \eqn{X_{i}(t)} on the hazard rate of recurrent events.
-#' 
 #' The simulated dataset is organized into two data frames:
 #' a survival data frame (\code{sdat}) and a functional data frame (\code{fdat}).
 #' The variables in each data frame are listed below:
 #' 
-
 #'
 #' @usage data(simDat)
 #' @docType data
