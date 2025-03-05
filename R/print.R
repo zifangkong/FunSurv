@@ -11,6 +11,7 @@ print.funsurv <- function(x, ...) {
 }
 
 
+#' @importFrom stats pnorm
 #' @exportS3Method summary funsurv
 summary.funsurv <- function(object, ...) {
   if (!is.funsurv(object)) stop("Must be a funsurv object")
@@ -23,7 +24,7 @@ summary.funsurv <- function(object, ...) {
   class(out) <- "summary.funsurv"
   return(out)
 }
-
+#' @importFrom stats pnorm printCoefmat
 #' @exportS3Method print summary.funsurv
 print.summary.funsurv <- function(x, ...) {
   cat("Call: \n")
