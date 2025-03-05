@@ -39,23 +39,22 @@ packageVersion("FunSurv")
 
 ## Import data
 
-Suppose we have collected data on both longitudinal measurements and recurrent event outcomes. The **surv_data** dataset contains information on recurrent event outcomes, including the event start time (*t_start*), event end time (*t_stop*), censoring time (*censoring_time*), event status (*status*), and a scalar covariate (*z1*).
+Suppose we have collected data on both longitudinal measurements and recurrent event outcomes. The **sdat** dataset contains information on recurrent event outcomes, including the event start time (*t_start*), event end time (*t_stop*), censoring time (*censoring_time*), event status (*status*), and a scalar covariate (*z1*).
 
-```{r surv_data}
-load("../data/surv_data.RData")
-head(surv_data)
+```{r sdat}
+data("simDat")
+head(sdat)
 ```
-The **fun_data** contains longitudinal measurements (*x*), recorded at multiple time points (*time*), for each subject (*id*) 
-```{r fun_data}
-load("../data/fun_data.RData")
-head(fun_data)
+The **fdat** contains longitudinal measurements (*x*), recorded at multiple time points (*time*), for each subject (*id*) 
+```{r fdat}
+head(fdat)
 ```
 
 We use the *plotEvents* function in **reReg** package (@chiou2023regression) to create a recurrent event plot. The horizontal axis represents the subjects' follow-up time, while the vertical axis represents individuals, sorted by the follow-up duration. Each green dot indicates a recurrent event. 
 
 ```{r plot_events, fig.width=6, fig.height=4}
 library(reReg)
-reReg::plotEvents(with(surv_data, Recur(t_stop, id, status)), xlab="Follow-up time", ylab="Subjects", cex=1,recurrent.color="darkgreen", control=list(alpha = 0.8, base_size=8))
+reReg::plotEvents(with(sdat, Recur(t_stop, id, status)), xlab="Follow-up time", ylab="Subjects", cex=1,recurrent.color="darkgreen", control=list(alpha = 0.8, base_size=8))
 ```
 
 ## Fit the AR1_FRIALTY model
@@ -69,8 +68,8 @@ First, we apply the functional principal component analysis (FPCA) for the longi
 args(AR1_PACE)
 ```
 
-* `fun_data` is data frame containing longitudinal measurements.
-* `surv_data` is a data frame containing information of recurrent event outcomes.
+* `fdat` is data frame containing longitudinal measurements.
+* `sdat` is a data frame containing information of recurrent event outcomes.
 * `nbasis` is an integer specifying the number of B-spline basis functions used for
 estimating the mean function and performing bivariate smoothing of the covariance surface (see *fpca.sc* in the **refund** package @crainiceanu2013package).
 * `pve` is numerical value between 0 and 1, representing the proportion of variance explained used to choose the number of functional principal components. Defaults to 0.9.
@@ -80,7 +79,7 @@ estimating the mean function and performing bivariate smoothing of the covarianc
 
 
 ```{r PACE}
-fpca = AR1_PACE(fun_data, surv_data, nbasis=10, pve=0.9)
+fpca = AR1_PACE(fdat, sdat, nbasis=10, pve=0.9)
 head(fpca$window_scores_fpca)
 plot(fpca$uni.PACE$functions, xlab = "Follow-up time", lwd = 3, col = c("blue4","violet", "orange1"))
 legend("bottomright", col = c("blue4","violet", "orange1"), lty = 1, lwd = 3, bty = "n", cex = 1, legend = c("FPC1", "FPC2", "FPC3"))
@@ -102,8 +101,8 @@ args(AR1_FRAILTY)
 * `eps` Tolerance criteria for a possible infinite coefficient value.
 
 ```{r}
-surv_data = surv_data[surv_data$id %in% fun_data$id, ]
-model = AR1_FRAILTY(formula=Event(t_start, t_stop, id, status) ~ z1, data=surv_data, fpca_obj=fpca, para0=c(0.5, 0.5))
+# sdat = sdat[sdat$id %in% fdat$id, ]
+model = AR1_FRAILTY(formula=Event(t_start, t_stop, id, status) ~ z1, sdat=sdat, fdat=fdat, nbasis=10, pve=0.9, para0=c(0.5, 0.5))
 ```
 
 
