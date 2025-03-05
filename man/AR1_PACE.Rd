@@ -60,7 +60,7 @@ This function calculates the FPC scores associated with each event gap time by
 }
 }
 \examples{
-inst/examples/ex_AR1_PACE.R
+../inst/examples/ex_AR1_PACE.R
 }
 \seealso{
 \code{\link[funData]{funData}}, \code{\link{fpcaBasis}}, \code{\link{univDecomp}}
