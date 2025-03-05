@@ -32,12 +32,23 @@ In this vignette, we aim to demonstrate how to use our package to jointly analyz
 ```{r load-pkg, message = FALSE}
 library(devtools)
 load_all()
-library(MFPCA)
 library(FunSurv)
 packageVersion("FunSurv")
 ```
+### Model Formulation
 
-## Import data
+Let $T_{ij}$ denote the time of the $j$th event for subject $i$, and let $C_i$ represent the censoring time. The observed event time, accounting for right censoring, is $\tilde{T}_{ij}=\min(T_{ij}, C_i)$, and $\delta_{ij}=I(T_{ij}\leq C_i)$ serves as an indicator of whether the $j$th event for subject $i$ is observed.
+Building on the survival analysis framework with time-dependent, correlated frailty introduced by @yau1998ml, the hazard function is specified as
+\begin{equation}\label{hazardFunction}
+    \begin{aligned}
+h(t; \boldsymbol{Z}_i, {X}_i(\cdot))=h_{0}(t-t_{i,j-1}) \exp \left(\eta_{ij}\right), 
+    \end{aligned}
+\end{equation}
+where $h_0(\cdot)$ is the baseline hazard function, and $\eta_{ij} = \boldsymbol{\alpha}^{\top}\boldsymbol{Z}_i +\int_{t_{i, j-1}}^{t}{X}_{i}(s)\beta(s)ds + v_{ij}$. Here, $t_{i, j-1}$ is the previous event time with $t_{i0} = 0$. $\boldsymbol{\alpha}$ is the fixed effect parameter associated with the time-invariant covariates $\boldsymbol{Z}_i$, and $\beta(t)$ is a time-varying coefficient that captures the effect of functional predictor ${X}_{i}(t)$ on the hazard rate of recurrent events. 
+
+
+
+### Import data
 
 Suppose we have collected data on both longitudinal measurements and recurrent event outcomes. The **sdat** dataset contains information on recurrent event outcomes, including the event start time (*t_start*), event end time (*t_stop*), censoring time (*censoring_time*), event status (*status*), and a scalar covariate (*z1*).
 
@@ -53,63 +64,52 @@ head(fdat)
 We use the *plotEvents* function in **reReg** package (@chiou2023regression) to create a recurrent event plot. The horizontal axis represents the subjects' follow-up time, while the vertical axis represents individuals, sorted by the follow-up duration. Each green dot indicates a recurrent event. 
 
 ```{r plot_events, fig.width=6, fig.height=4}
-library(reReg)
 reReg::plotEvents(with(sdat, Recur(t_stop, id, status)), xlab="Follow-up time", ylab="Subjects", cex=1,recurrent.color="darkgreen", control=list(alpha = 0.8, base_size=8))
 ```
 
-## Fit the AR1_FRIALTY model
+### Fit the AR1_FRIALTY model
 
-We used a two-step procedure to fit the joint model. 
+The *AR1_FRIALTY* model employs a two-step procedure to fit the joint model.
+First, we apply the functional principal component analysis (FPCA) for the longitudinal outcome and obtain the event-specific FPC scores. The calculation of event-specific FPC scores involves 1) calculate the overall FPC scores using *PACE* function in the **MFPCA** package (@mfpca); 2) incorporate the overall FPC scores to obtain the event-specific FPC scores. The results of the first step is a data frame of 3 columns of FPC scores, where each column is associated with a leading functional principal component. 
 
-### Step 1
+In the second step, the obtained scores are incorporated into a dynamic recurrent frailty model with an autoregressive structure to account for within-subject correlations across recurrent events.
 
-First, we apply the functional principal component analysis (FPCA) for the longitudinal outcome and obtain the event-specific FPC scores. The calculation of event-specific FPC scores involves 1) calculate the overall FPC scores using *PACE* function in the **MFPCA** package (@mfpca); 2) incorporate the overall FPC scores to obtain the event-specific FPC scores.
-```{r PACE_args}
-args(AR1_PACE)
+```{r}
+args(AR1_FRAILTY)
 ```
-
-* `fdat` is data frame containing longitudinal measurements.
+* `formula` A formula, with the response on the left of a ~ operator being a *Recur* object as returned by function Recur in **reda**, and scalar covariates on the right.
 * `sdat` is a data frame containing information of recurrent event outcomes.
+* `fdat` is data frame containing longitudinal measurements.
+* `para0` A vector of initial values for $\theta^2$ and auto-regressive coefficient $\rho$. Both defaults to 0.5.
 * `nbasis` is an integer specifying the number of B-spline basis functions used for
 estimating the mean function and performing bivariate smoothing of the covariance surface (see *fpca.sc* in the **refund** package @crainiceanu2013package).
 * `pve` is numerical value between 0 and 1, representing the proportion of variance explained used to choose the number of functional principal components. Defaults to 0.9.
 * `npc` is an integer specifying the number of functional principal components.
 * `makePD`is boolean value for should positive definiteness be enforced for the covariance surface estimate? (cf. *fpca.sc* in **refund** @crainiceanu2013package).
 * `cov.weight.type` defines the type of weighting used for the smooth covariance estimate. Defaults to "none", i.e. no weighting. Alternatively, "counts" (corresponds to *fpca.sc* in **refund** @crainiceanu2013package) weights the pointwise estimates of the covariance function by the number of observation points.
-
-
-```{r PACE}
-fpca = AR1_PACE(fdat, sdat, nbasis=10, pve=0.9)
-head(fpca$window_scores_fpca)
-plot(fpca$uni.PACE$functions, xlab = "Follow-up time", lwd = 3, col = c("blue4","violet", "orange1"))
-legend("bottomright", col = c("blue4","violet", "orange1"), lty = 1, lwd = 3, bty = "n", cex = 1, legend = c("FPC1", "FPC2", "FPC3"))
-```
-
-By fitting the *AR1_PACE* function, we obtain a data frame of 3 columns of FPC scores, where each column corresponds to a leading functional principal component. 
-
-
-### Step 2
-In the second step, we incorporate the FPC scores obtained from the previous step, and 
-```{r}
-args(AR1_FRAILTY)
-```
-* `formula` A Event formula, with the response on the left of a ~ operator, and scalar covariates on the right. The response must be a Event object using Event function.
-* `data` A data frame, including time-to-event outcomes, and scalar coefficients
-* `scores` A data frame of FPC scores, returned by the *AR1_PACE* function
-* `para0` Initial values for $\theta^2$ and auto-regressive coefficient $\rho$.
 * `iter.max` Maximum number of iterations for both inner iteration and outer iteration.
 * `eps` Tolerance criteria for a possible infinite coefficient value.
 
+We set the percentage of variance explained to 90\% to determine a finite number of FPC components, resulting in three FPC components
 ```{r}
-# sdat = sdat[sdat$id %in% fdat$id, ]
-model = AR1_FRAILTY(formula=Event(t_start, t_stop, id, status) ~ z1, sdat=sdat, fdat=fdat, nbasis=10, pve=0.9, para0=c(0.5, 0.5))
+fit <- AR1_FRAILTY(formula=Recur(t_start %to% t_stop, id, status) ~ z1, sdat=sdat, fdat=fdat, nbasis=10, pve=0.9)
+summary(fit)
 ```
-
-
-### Plot
 
 The functional coefficient $\beta(t)$ can be plotted via `plot()`:
 ```{r plot-betat}
-plot_beta(model)
+plot(fit, which="beta")
 ```
 
+The plot below shows the estimated baseline survival probability. 
+```{r plot-basesurv}
+plot(fit, which="basesurv")
+```
+
+The plot below demonstrates the three functional principal components estimated from longitudinal measurements.
+```{r plot-fpc}
+plot(fit, which="fpc")
+```
+
+
+### References
