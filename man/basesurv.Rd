@@ -18,7 +18,8 @@ A function to obtain the baseline survival function
 \examples{
 data(simDat)
 
-fpc_obj <- AR1_PACE(fun_data, surv_data, nbasis=10, pve=0.9) # 90\% leads to 3 FPC components
-model <- AR1_FRAILTY(formula=Event(t_start, t_stop, id, status) ~ z1, data=surv_data, fpca_obj=fpc_obj, para0=c(0.5, 0.5))
-basesurv(model)
+fit <- AR1_FRAILTY(formula=Recur(t_start \%to\% t_stop, id, event=status) ~ z1, sdat=sdat, fdat=fdat)
+
+basesurv(fit)
+plot(fit, which="basesurv")
 }
