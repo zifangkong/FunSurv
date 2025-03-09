@@ -6,7 +6,7 @@ Authors@R:
       person("Sy Han (Steven)", "Chiou", role = "aut"),
       person("Yu-Lun", "Liu", role = c("aut")))
 Description: Functions to jointly analyze longitudinal measurements and recurrent events by accommodating both scalar and functional predictors while accounting for time-dependent correlations among events.
-Depends: R (>= 3.4.0)
+Depends: R (>= 3.5.0)
 License: MIT + file LICENSE
 URL: https://github.com/zifangkong/FunSurv
 BugReports: https://github.com/zifangkong/FunSurv/issues

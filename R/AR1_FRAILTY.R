@@ -64,6 +64,7 @@
 #' @importFrom MASS ginv
 #' @importFrom stats model.matrix model.extract
 #' @importFrom Matrix bdiag
+#' @import methods
 #' 
 #' @seealso \code{\link{Recur}}
 #' @seealso \code{\link{PACE}}
