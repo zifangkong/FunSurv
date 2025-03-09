@@ -1,6 +1,6 @@
 #' A function to obtain the baseline survival function
 #'
-#' @param object An AR1 FRAILTY object
+#' @param object A funsurv object
 #'
 #' @returns A data frame including time and baseline survival
 #' @export
