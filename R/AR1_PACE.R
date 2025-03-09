@@ -7,7 +7,7 @@
 #' \code{fpca.sc} in package \strong{refund}.
 #' \code{PACE} in package \strong{MFPCA}.
 #'   
-#' @param sdat A data frame containing subject IDs,  time-to-event outcomes (starting time, end point, censoring time and event status), and scalar covariates
+#' @param sdat A data frame containing subject IDs,  time-to-event outcomes (starting time, end point, censoring time and event status), and scalar coefficients
 #' @param fdat A data frame containing subject IDs, longitudinal measurements, and the corresponding time points for each measurement.
 #' @param nbasis An integer, representing the number of  B-spline basis 
 #'   functions used for estimation of the mean function and bivariate smoothing 
@@ -45,7 +45,6 @@ AR1_PACE <- function(sdat, fdat, nbasis = 10, pve = 0.90,
     warning("Subjects" , paste0(removed_subj, collapse = ","), "were removed from analysis.")
   }
   sdat <- sdat[which(sdat$id %in% unique(fdat$id)), ]  
-
   ## transform fdat to a functional data object
   data_split <- split(fdat, fdat$id)
   argvals <- lapply(data_split, function(df) df$time)
@@ -77,7 +76,7 @@ AR1_PACE <- function(sdat, fdat, nbasis = 10, pve = 0.90,
   window_scores_fpca = matrix(NA, nrow=nrow(sdat), ncol=npc)
   counter <- 1
   for (id in seq_along(unique(sdat$id))) {
-    temp_df <- sdat[sdat$id == unique(sdat$id)[id], ]    
+    temp_df <- sdat[sdat$id == unique(sdat$id)[id], ]   
     idx <- c(0, vapply(temp_df$t_stop, function(x) {
       max(which(argvals_irregular <= x))
     }, FUN.VALUE = numeric(1)))    
