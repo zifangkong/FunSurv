@@ -10,24 +10,27 @@
 #' 
 #'
 #' @usage data(simDat)
+#' @source Simulated data
 #' @docType data
 #' @name simDat
-#' @rdname simDat
-#' @format \bold{Survival data \code{sdat}}
+#' @aliases sdat fdat simData
+#' @format A list with two data frame: 
 #' \describe{
-#'   \item{id}{Subjects identification}
-#'   \item{event}{A sequence of the number of events per subject}
-#'   \item{t_start}{Event starting time}
-#'   \item{t_end}{Event end time}
-#'   \item{censoring_time}{Event censoring time}
-#'   \item{status}{Event status: \code{status=1} if event is observed and \code{status=0} if event is censored}
-#'   \item{z1}{A univariate scalar covariates. Can be extended to multiple scalar covariates}
-#'  }
-#'  
-#' @format \bold{Functional data \code{fdat}}
-#' \describe{
-#'   \item{id}{Subjects identification}
-#'   \item{time}{Time points for each longitudinal measurement}
-#'   \item{x}{Longitudinal measurements at distinct time points}
+#'   \item{sdat}{Survival data; a data frame with xxx rows and xxx variables:}
+#'   \describe{
+#'     \item{id}{Subjects identification}
+#'     \item{event}{A sequence of the number of events per subject}
+#'     \item{t_start}{Event starting time}
+#'     \item{t_end}{Event end time}
+#'     \item{censoring_time}{Event censoring time}
+#'     \item{status}{Event status: \code{status=1} if event is observed and \code{status=0} if event is censored}
+#'     \item{z1}{A univariate scalar covariates. Can be extended to multiple scalar covariates}
+#'   }
+#'   \item{fdat}{Functional data; a data frame with xxx rows and xxx variables:}
+#'   \describe{
+#'     \item{id}{Subjects identification}
+#'     \item{time}{Time points for each longitudinal measurement}
+#'     \item{x}{Longitudinal measurements at distinct time points}
+#'   }
 #'  }
 NULL

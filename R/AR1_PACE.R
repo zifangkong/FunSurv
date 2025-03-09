@@ -34,10 +34,11 @@
 #'   one observation.}
 #'         \item{FPC}{Functional principal components}
 #' @seealso \code{\link[funData]{funData}}, \code{\link{fpcaBasis}}, \code{\link{univDecomp}}
+#'
 #' @importFrom MFPCA PACE
 #' @importFrom funData .intWeights irregFunData
 #'   
-#' @examples inst/examples/ex_AR1_PACE.R
+#' @noRd
 AR1_PACE <- function(sdat, fdat, nbasis = 10, pve = 0.90,
                      npc = NULL, makePD = FALSE, cov.weight.type = "none"){
   if(length(unique(sdat$id)) > length(unique(fdat$id))){
@@ -51,7 +52,8 @@ AR1_PACE <- function(sdat, fdat, nbasis = 10, pve = 0.90,
   xList <- lapply(data_split, function(df) df$x)
   x_FunObject <- irregFunData(argvals = argvals, X = xList)  
   ## apply functional principal component analysis conditional expectation to the functional object
-  uni.PACE <- PACE(x_FunObject, nbasis=nbasis, pve=pve, npc = npc, makePD = makePD, cov.weight.type = cov.weight.type)  
+  uni.PACE <- PACE(x_FunObject, nbasis = nbasis, pve=pve, npc = npc,
+                   makePD = makePD, cov.weight.type = cov.weight.type)  
   sigma2 <- uni.PACE$sigma2
   argvals_irregular <- uni.PACE$mu@argvals[[1]]
   w0 <- .intWeights(argvals_irregular, method = "trapezoidal")
@@ -73,7 +75,7 @@ AR1_PACE <- function(sdat, fdat, nbasis = 10, pve = 0.90,
     ## Return the scores
     tcrossprod(uni.PACE$scores[id,], J_fpca_basis)
   }  
-  window_scores_fpca = matrix(NA, nrow=nrow(sdat), ncol=npc)
+  window_scores_fpca <- matrix(NA, nrow = nrow(sdat), ncol = npc)
   counter <- 1
   for (id in seq_along(unique(sdat$id))) {
     temp_df <- sdat[sdat$id == unique(sdat$id)[id], ]   
@@ -89,6 +91,8 @@ AR1_PACE <- function(sdat, fdat, nbasis = 10, pve = 0.90,
     counter <- counter + length(scores)
   }
   colnames(window_scores_fpca) <- paste0("score", seq(npc))
-  return(list(window_scores_fpca=window_scores_fpca, FPC=uni.PACE$functions))
+  return(list(window_scores_fpca = window_scores_fpca,
+              FPC_argvals = uni.PACE$functions@argvals[[1]],
+              FPC_X = uni.PACE$functions@X))
 }
 

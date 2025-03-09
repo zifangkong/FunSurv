@@ -1,5 +1,5 @@
 Package: FunSurv
-Title: Joint analysis of recurrent event and longitudinal data using a functional regression approach
+Title: Joint Analysis of Recurrent Event and Longitudinal Data using a Functional Regression Approach
 Version: 0.1.0
 Authors@R: 
     c(person("Zifang", "Kong", , "zkong@smu.edu", role = c("aut", "cre")),
@@ -13,4 +13,4 @@ BugReports: https://github.com/zifangkong/FunSurv/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-Imports: MFPCA, MASS, funData, Matrix, ggplot2, tidyr, dplyr, reReg, reda
+Imports: MFPCA, MASS, funData, Matrix, ggplot2, methods, reda (>= 0.5.0)

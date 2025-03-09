@@ -1,6 +1,6 @@
 data(simDat)
 
-fit <- AR1_FRAILTY(Recur(t_start %to% t_stop, id, event = status) ~ z1,
+fit <- AR1_FRAILTY(Recur(t_start %to% t_stop, id, status) ~ z1,
                    sdat = sdat, fdat = fdat)
 
-plot(fit, which = "basesurv")
+plot(fit, what = "basesurv")

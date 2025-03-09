@@ -62,10 +62,9 @@
 #'  \item{FPC}{Functional principal components}
 #'  
 #' @importFrom MASS ginv
-#' @importFrom stats model.matrix model.extract
+#' @importFrom stats model.matrix model.extract model.frame
 #' @importFrom Matrix bdiag
-#' @import methods
-#' 
+#'
 #' @seealso \code{\link{Recur}}
 #' @seealso \code{\link{PACE}}
 #' @export
@@ -93,7 +92,7 @@ AR1_FRAILTY <- function(formula,
   mf <- mf[c(1L, m)]
   mf$data <- data
   mf$drop.unused.levels <- TRUE
-  mf[[1L]] <- quote(stats::model.frame)
+  mf[[1L]] <- quote(model.frame)
   mf <- eval(mf, parent.frame())
   mm <- model.matrix(formula, data = mf)
   obj <- model.extract(mf, "response")
@@ -196,7 +195,8 @@ AR1_FRAILTY <- function(formula,
               frailties = as.vector(V),
               basesurv = as.vector(basesurv), 
               time = as.vector(sort(DF$time2)), 
-              FPC=fpca_obj$FPC,
+              FPC_argvals = fpca_obj$FPC_argvals,
+              FPC_X = fpca_obj$FPC_X,
               call = Call)
   class(out) <- "funsurv"
   return(out)
@@ -261,4 +261,5 @@ IJK <- function(ni){
   list(I = I, J = J, K = K)
 }
 
+## #' @importFrom methods getClass
 is.funsurv <- function(x) inherits(x, "funsurv")

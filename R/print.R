@@ -31,9 +31,9 @@ print.summary.funsurv <- function(x, ...) {
   cat("Call: \n")
   dput(x$call) 
   cat("\n Coefficients: \n")
-  printCoefmat(x$tabbeta, P.value = TRUE, has.Pvalue = TRUE, signif.legend = FALSE)
+  printCoefmat(x$tabbeta, P.values = TRUE, has.Pvalue = TRUE, signif.legend = FALSE)
   cat("\n Variance component and auto-regressive coefficient: \n")
-    printCoefmat(x$tabAR, P.value = TRUE, has.Pvalue = TRUE, signif.legend = TRUE)
+    printCoefmat(x$tabAR, P.values = TRUE, has.Pvalue = TRUE, signif.legend = TRUE)
   cat("\n")
 }
  

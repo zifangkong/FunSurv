@@ -3,9 +3,14 @@
 \docType{data}
 \name{simDat}
 \alias{simDat}
+\alias{sdat}
+\alias{fdat}
+\alias{simData}
 \title{Simulated datasets for demonstration}
 \format{
-\bold{Survival data \code{sdat}}
+A list with two data frame:
+\describe{
+\item{sdat}{Survival data; a data frame with xxx rows and xxx variables:}
 \describe{
 \item{id}{Subjects identification}
 \item{event}{A sequence of the number of events per subject}
@@ -15,13 +20,16 @@
 \item{status}{Event status: \code{status=1} if event is observed and \code{status=0} if event is censored}
 \item{z1}{A univariate scalar covariates. Can be extended to multiple scalar covariates}
 }
-
-\bold{Functional data \code{fdat}}
+\item{fdat}{Functional data; a data frame with xxx rows and xxx variables:}
 \describe{
 \item{id}{Subjects identification}
 \item{time}{Time points for each longitudinal measurement}
 \item{x}{Longitudinal measurements at distinct time points}
 }
+}
+}
+\source{
+Simulated data
 }
 \usage{
 data(simDat)

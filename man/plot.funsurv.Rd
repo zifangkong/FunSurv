@@ -4,15 +4,17 @@
 \alias{plot.funsurv}
 \title{Plot method for 'funsurv' objects}
 \usage{
-\method{plot}{funsurv}(x, which = c("beta", "fpc", "basesurv"))
+\method{plot}{funsurv}(x, what = c("beta", "fpc", "basesurv"), ...)
 }
 \arguments{
 \item{x}{A funsurv object}
 
-\item{which}{A character string specifying what to be plotted.
-Use \code{which = "beta"} to plot the estimated \eqn{\beta(t)}.
-Use \code{which = "fpc"} to plot the functional principal components associated with the the longitudinal measurements.
-Use \code{which = "basesurv"} to plot the baseline survival probabilities.}
+\item{what}{A character string specifying what to be plotted.
+Use \code{what = "beta"} to plot the estimated \eqn{\beta(t)}.
+Use \code{what = "fpc"} to plot the functional principal components associated with the the longitudinal measurements.
+Use \code{what = "basesurv"} to plot the baseline survival probabilities.}
+
+\item{...}{additional graphical parameters to be passed to methods.}
 }
 \value{
 A ggplot object ...
@@ -21,8 +23,10 @@ A ggplot object ...
 Plot method for 'funsurv' objects
 }
 \examples{
-fit <- AR1_FRAILTY(formula=Recur(t_start \%to\% t_stop, id, event=status) ~ z1, sdat=sdat, fdat=fdat)
-plot(fit, which="beta")
-plot(fit, which="fpc")
-plot(fit, which="basesurv")
+data(simDat)
+fit <- AR1_FRAILTY(Recur(t_start \%to\% t_stop, id, status) ~ z1,
+                   sdat = sdat, fdat = fdat)
+plot(fit, what = "beta")
+plot(fit, what = "fpc")
+plot(fit, what = "basesurv")
 }

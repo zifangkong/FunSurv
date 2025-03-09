@@ -94,7 +94,7 @@ and \eqn{\beta(t)} is a time-varying coefficient that captures the effect of fun
 \examples{
 data(simDat)
 
-fit <- AR1_FRAILTY(Recur(t_start \%to\% t_stop, id, event = status) ~ z1,
+fit <- AR1_FRAILTY(Recur(t_start \%to\% t_stop, id, status) ~ z1,
                    sdat = sdat, fdat = fdat)
 
 summary(fit)
