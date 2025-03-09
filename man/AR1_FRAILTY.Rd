@@ -13,7 +13,7 @@ AR1_FRAILTY(
   pve = 0.9,
   npc = NULL,
   makePD = FALSE,
-  cov.weight.type = "none",
+  cov.weight.type = c("none", "counts"),
   iter.max = 50,
   eps = 1e-06
 )
@@ -94,12 +94,10 @@ and \eqn{\beta(t)} is a time-varying coefficient that captures the effect of fun
 \examples{
 data(simDat)
 
-fit <- AR1_FRAILTY(formula=Recur(t_start \%to\% t_stop, id, event=status) ~ z1, sdat=sdat, fdat=fdat)
+fit <- AR1_FRAILTY(Recur(t_start \%to\% t_stop, id, event = status) ~ z1,
+                   sdat = sdat, fdat = fdat)
 
-str(basesurv(fit))
-print(fit)
 summary(fit)
-plot(fit)
 }
 \seealso{
 \code{\link{Recur}}

@@ -19,7 +19,7 @@ install.packages("FunSurv")
 library(FunSurv)
 ```
 
-You can install **FunSurv** from Github with:
+You can install **FunSurv** from GitHub with:
 
 ``` r
 ## install.packages("devtools")

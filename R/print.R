@@ -24,7 +24,8 @@ summary.funsurv <- function(object, ...) {
   class(out) <- "summary.funsurv"
   return(out)
 }
-#' @importFrom stats pnorm printCoefmat
+
+#' @importFrom stats printCoefmat
 #' @exportS3Method print summary.funsurv
 print.summary.funsurv <- function(x, ...) {
   cat("Call: \n")

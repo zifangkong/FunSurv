@@ -62,7 +62,9 @@
 #'  \item{FPC}{Functional principal components}
 #'  
 #' @importFrom MASS ginv
+#' @importFrom stats model.matrix model.extract
 #' @importFrom Matrix bdiag
+#' 
 #' @seealso \code{\link{Recur}}
 #' @seealso \code{\link{PACE}}
 #' @export
@@ -76,12 +78,13 @@ AR1_FRAILTY <- function(formula,
                         pve = 0.90,
                         npc = NULL, 
                         makePD = FALSE, 
-                        cov.weight.type = "none",
+                        cov.weight.type = c("none", "counts"), 
                         iter.max = 50, 
                         eps = 1e-6) {  
   if (missing(formula)) stop("A Event formula is required.")
   if (missing(sdat)) stop("A dataset of time-to-event outcomes is required.")
   if (missing(fdat)) stop("A dataset of longitudinal measurements is required.")
+  cov.weight.type <- match.arg(cov.weight.type)
   data <- sdat
   Call <- match.call()
   mf <- match.call(expand.dots = FALSE)
@@ -91,14 +94,15 @@ AR1_FRAILTY <- function(formula,
   mf$drop.unused.levels <- TRUE
   mf[[1L]] <- quote(stats::model.frame)
   mf <- eval(mf, parent.frame())
-  mm <- stats::model.matrix(formula, data = mf)
-  obj <- stats::model.extract(mf, "response")
+  mm <- model.matrix(formula, data = mf)
+  obj <- model.extract(mf, "response")
   DF <- cbind(obj, mm)
   DF <- DF[,colnames(DF) != "(Intercept)"]
   DF <- data.frame(DF)
   DF$gap_time <- DF$time2 - DF$time1  
   ## AR1_PACE
-  fpca_obj <- AR1_PACE(sdat, fdat, nbasis=nbasis, pve=pve, npc=npc, makePD=makePD, cov.weight.type=cov.weight.type)
+  fpca_obj <- AR1_PACE(sdat, fdat, nbasis = nbasis, pve = pve, npc = npc,
+                       makePD = makePD, cov.weight.type = cov.weight.type)
   scores <- fpca_obj$window_scores_fpca
   if(nrow(DF) != nrow(scores)) stop("Dimension of sdat does not match with the dimension of FPC scores")
   DF <- cbind(DF, scores)
@@ -208,23 +212,21 @@ AR1_FRAILTY <- function(formula,
 #' @returns estimation for \eqn{\theta^2} and \eqn{\rho}
 #' @noRd
 calculate_variance_components <- function(ni, tau, rho, J, K) {
-   N <- sum(ni)
-   M <- length(ni)
-   ## calculate A1, A2, A3
-   A1 <- sum(diag(tau))
-   A2 <- sum(diag(J %*% tau)) / 2
-   A3 <- sum(diag(K %*% tau))
-   
-   ## calculate B1, B2, B3, B4
-   B1 <- (N - M) * (A1 - A3)
-   B2 <- (2 * M - N) * A2
-   B3 <- N * A3 - (N + M) * A1
-   B4 <- N * A2
-   
-   ## estimate rho and theta
-   rho0 <- (rho - (B1*rho^3 + B2*rho^2 + B3*rho + B4) / (3*B1*rho^2 + 2*B2*rho + B3))
-   theta20 <- ((1 + rho0^2)*A1 - 2*rho0*A2 - (rho0^2)*A3) / N
-   list(rho = rho0, theta2 = theta20)
+  N <- sum(ni)
+  M <- length(ni)
+  ## calculate A1, A2, A3
+  A1 <- sum(diag(tau))
+  A2 <- sum(diag(J %*% tau)) / 2
+  A3 <- sum(diag(K %*% tau))
+  ## calculate B1, B2, B3, B4
+  B1 <- (N - M) * (A1 - A3)
+  B2 <- (2 * M - N) * A2
+  B3 <- N * A3 - (N + M) * A1
+  B4 <- N * A2   
+  ## estimate rho and theta
+  rho0 <- (rho - (B1*rho^3 + B2*rho^2 + B3*rho + B4) / (3*B1*rho^2 + 2*B2*rho + B3))
+  theta20 <- ((1 + rho0^2)*A1 - 2*rho0*A2 - (rho0^2)*A3) / N
+  list(rho = rho0, theta2 = theta20)
 }
 
 #' Estimate I J K matrices are used for the estimation of AR(1) correlation structure
@@ -234,28 +236,28 @@ calculate_variance_components <- function(ni, tau, rho, J, K) {
 #' @returns I, J, K matrices
 #' @noRd
 IJK <- function(ni){
-   N <- sum(ni)
-   M <- length(ni)
-   ## I
-   I <- diag(N)    
-   ## J
-   J <- diag(0,N)
-   if(max(ni)>1){
-      maxJ <- diag(0,max(ni))
-      diag(maxJ[,-1]) <- diag(maxJ[-1,]) <- 1
-      J_block_list <- lapply(ni, function(x) maxJ[1:x,1:x])
-      J <- as.matrix(bdiag(J_block_list))
-   } 
-   ## K
-   K_block_list <- lapply(ni, function(x) {
-      if(x==1) k <- as.matrix(2)
-      else{
-         k <- diag(0, x)
-         k[1,1] <- k[x, x] <- 1
-      } 
-      return(k)})
-   K <- as.matrix(bdiag(K_block_list))
-   list(I=I,J=J,K=K)
+  N <- sum(ni)
+  M <- length(ni)
+  ## I
+  I <- diag(N)    
+  ## J
+  J <- diag(0,N)
+  if(max(ni)>1){
+    maxJ <- diag(0,max(ni))
+    diag(maxJ[,-1]) <- diag(maxJ[-1,]) <- 1
+    J_block_list <- lapply(ni, function(x) maxJ[1:x,1:x])
+    J <- as.matrix(bdiag(J_block_list))
+  } 
+  ## K
+  K_block_list <- lapply(ni, function(x) {
+    if(x==1) k <- as.matrix(2)
+    else{
+      k <- diag(0, x)
+      k[1,1] <- k[x, x] <- 1
+    } 
+    return(k)})
+  K <- as.matrix(bdiag(K_block_list))
+  list(I = I, J = J, K = K)
 }
 
 is.funsurv <- function(x) inherits(x, "funsurv")

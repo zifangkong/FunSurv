@@ -4,15 +4,15 @@
 \alias{plot.funsurv}
 \title{Plot method for 'funsurv' objects}
 \usage{
-\method{plot}{funsurv}(x, which = "beta")
+\method{plot}{funsurv}(x, which = c("beta", "fpc", "basesurv"))
 }
 \arguments{
 \item{x}{A funsurv object}
 
 \item{which}{A character string specifying what to be plotted.
-Use \code{which="beta"} to plot the estimated \eqn{\beta(t)}.
-Use \code{which="fpc"} to plot the functional principal components associated with the the longitudinal measurements.
-Use \code{which="basesurv"} to plot the baseline survival probabilities.}
+Use \code{which = "beta"} to plot the estimated \eqn{\beta(t)}.
+Use \code{which = "fpc"} to plot the functional principal components associated with the the longitudinal measurements.
+Use \code{which = "basesurv"} to plot the baseline survival probabilities.}
 }
 \value{
 A ggplot object ...

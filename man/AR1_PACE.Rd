@@ -15,7 +15,7 @@ AR1_PACE(
 )
 }
 \arguments{
-\item{sdat}{A data frame containing subject IDs,  time-to-event outcomes (starting time, end point, censoring time and event status), and scalar covariates}
+\item{sdat}{A data frame containing subject IDs,  time-to-event outcomes (starting time, end point, censoring time and event status), and scalar coefficients}
 
 \item{fdat}{A data frame containing subject IDs, longitudinal measurements, and the corresponding time points for each measurement.}
 
@@ -60,7 +60,7 @@ This function calculates the FPC scores associated with each event gap time by
 }
 }
 \examples{
-../inst/examples/ex_AR1_PACE.R
+inst/examples/ex_AR1_PACE.R
 }
 \seealso{
 \code{\link[funData]{funData}}, \code{\link{fpcaBasis}}, \code{\link{univDecomp}}

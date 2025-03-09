@@ -18,8 +18,8 @@ A function to obtain the baseline survival function
 \examples{
 data(simDat)
 
-fit <- AR1_FRAILTY(formula=Recur(t_start \%to\% t_stop, id, event=status) ~ z1, sdat=sdat, fdat=fdat)
+fit <- AR1_FRAILTY(Recur(t_start \%to\% t_stop, id, event = status) ~ z1,
+                   sdat = sdat, fdat = fdat)
 
-basesurv(fit)
-plot(fit, which="basesurv")
+plot(fit, which = "basesurv")
 }
