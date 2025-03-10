@@ -19,7 +19,7 @@ install.packages("FunSurv")
 library(FunSurv)
 ```
 
-You can install **FunSurv** from Github with:
+You can install **FunSurv** from GitHub with:
 
 ``` r
 ## install.packages("devtools")
@@ -36,13 +36,21 @@ citation("FunSurv")
 
 ### Online documentation
 
-https://github.com/zifangkong/FunSurv/blob/master/vignettes/funSurv-AR1_FRAILTY.html
+<https://github.com/zifangkong/FunSurv/blob/master/vignettes/funSurv-AR1_FRAILTY.html>
 
 ### References:
 
-Yau, K. K. W., & McGilchrist, C. A. (1998). ML and REML estimation in
-survival analysis with time dependent correlated frailty. *Statistics in
-Medicine*, **17**(11), 1201-1213.
+Gellar, J. E., Colantuoni, E., Needham, D. M., & Crainiceanu, C. M.
+(2015). Cox Regression Models with Functional Covariates for Survival
+Data. *Statistical Modelling*, **15**(3), 256–278.
+<https://doi.org/10.1177/1471082X14565526>
+
+\[UNDER REVIEW\] Kong, Z., Chiou, S.H., Maalouf, N.M., & Liu Y.L.
+(2025+) Joint analysis of longitudinal and recurrent event data: A
+functional regression approach with autoregressive frailty.
+
+Kong, D., Ibrahim, J. G., Lee, E., & Zhu, H. (2018). FLCRM: Functional
+linear cox regression model. *Biometrics*, **74**(1), 109-117.
 
 Yao, F., Müller, H. G., & Wang, J. L. (2005). Functional linear
 regression analysis for longitudinal data. *The Annals of Statistics*,
@@ -51,5 +59,6 @@ regression analysis for longitudinal data. *The Annals of Statistics*,
 Yao, Fang. Functional principal component analysis for longitudinal and
 survival data. *Statistica Sinica*, (2007): 965-983.
 
-Kong, D., Ibrahim, J. G., Lee, E., & Zhu, H. (2018). FLCRM: Functional
-linear cox regression model. *Biometrics*, **74**(1), 109-117.
+Yau, K. K. W., & McGilchrist, C. A. (1998). ML and REML estimation in
+survival analysis with time dependent correlated frailty. *Statistics in
+Medicine*, **17**(11), 1201-1213.

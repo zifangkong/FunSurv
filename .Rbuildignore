@@ -1,3 +1,6 @@
+^README\.Rmd$
+^README\.md$
+^README-.*\.png$
 ^FunSurv\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$

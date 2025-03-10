@@ -7,8 +7,8 @@
 #' \code{fpca.sc} in package \strong{refund}.
 #' \code{PACE} in package \strong{MFPCA}.
 #'   
-#' @param fdat A data frame containing subject IDs, longitudinal measurements, and the corresponding time points for each measurement.
 #' @param sdat A data frame containing subject IDs,  time-to-event outcomes (starting time, end point, censoring time and event status), and scalar coefficients
+#' @param fdat A data frame containing subject IDs, longitudinal measurements, and the corresponding time points for each measurement.
 #' @param nbasis An integer, representing the number of  B-spline basis 
 #'   functions used for estimation of the mean function and bivariate smoothing 
 #'   of the covariance surface. Defaults to \code{10} (cf. 
@@ -28,39 +28,35 @@
 #'   pointwise estimates of the covariance function by the number of observation
 #'   points.
 #'   
-#' @returns A list containing:
-#'  \item{scores}{An matrix of estimated event-specific scores for the 
+#' @return A list containing:
+#'         \item{scores}{An matrix of estimated event-specific scores for the 
 #'   observations in \code{funDataObject}. Each row corresponds to the scores of
 #'   one observation.}
-#'  \item{uni.PACE}{Results of a Univariate Functional component analysis}
+#'         \item{FPC}{Functional principal components}
 #' @seealso \code{\link[funData]{funData}}, \code{\link{fpcaBasis}}, \code{\link{univDecomp}}
+#'
 #' @importFrom MFPCA PACE
 #' @importFrom funData .intWeights irregFunData
-#' 
-#' @export
 #'   
-#' @examples inst/examples/ex_AR1_PACE.R
-AR1_PACE <- function(fdat, sdat, nbasis = 10, pve = 0.90,
-                     npc = NULL, makePD = FALSE, cov.weight.type = "none"){
+#' @noRd
+AR1_PACE <- function(sdat, fdat, nbasis = 10, pve = 0.90,
+                     npc = NULL, makePD = FALSE,
+                     cov.weight.type = c("none", "counts")) {
+  cov.weight.type <- match.arg(cov.weight.type)
   if(length(unique(sdat$id)) > length(unique(fdat$id))){
     removed_subj = unique(sdat$id)[! unique(sdat$id) %in% unique(fdat$id)]
     warning("Subjects" , paste0(removed_subj, collapse = ","), "were removed from analysis.")
   }
-<<<<<<< HEAD
-  sdat <- sdat[which(sdat$id %in% unique(fdat$id)), ]
-  
+  sdat <- sdat[which(sdat$id %in% unique(fdat$id)), ]  
   ## transform fdat to a functional data object
   data_split <- split(fdat, fdat$id)
-=======
-  surv_data <- surv_data[which(surv_data$id %in% unique(fun_data$id)), ]  
-  ## transform fun_data to a functional data object
-  data_split <- split(fun_data, fun_data$id)
->>>>>>> ada20d6fd7a5c951c002fb429e6d50b27124a675
   argvals <- lapply(data_split, function(df) df$time)
   xList <- lapply(data_split, function(df) df$x)
   x_FunObject <- irregFunData(argvals = argvals, X = xList)  
-  ## apply functional principal component analyssis conditional expectation to the functional object
-  uni.PACE <- PACE(x_FunObject, nbasis=nbasis, pve=pve, npc = npc, makePD = makePD, cov.weight.type = cov.weight.type)  
+  ## apply functional principal component analysis conditional expectation to the functional object
+  uni.PACE <- PACE(x_FunObject,
+                   nbasis = nbasis, pve=pve, npc = npc,
+                   makePD = makePD, cov.weight.type = cov.weight.type)  
   sigma2 <- uni.PACE$sigma2
   argvals_irregular <- uni.PACE$mu@argvals[[1]]
   w0 <- .intWeights(argvals_irregular, method = "trapezoidal")
@@ -81,23 +77,11 @@ AR1_PACE <- function(fdat, sdat, nbasis = 10, pve = 0.90,
     J_fpca_basis <- X_obs %*% tcrossprod(W_obs, X_obs)
     ## Return the scores
     tcrossprod(uni.PACE$scores[id,], J_fpca_basis)
-<<<<<<< HEAD
-  }
-  
-  window_scores_fpca = matrix(NA, nrow=nrow(sdat), ncol=npc)
+  }  
+  window_scores_fpca <- matrix(NA, nrow = nrow(sdat), ncol = npc)
   counter <- 1
   for (id in seq_along(unique(sdat$id))) {
-    temp_df <- sdat[sdat$id == unique(sdat$id)[id], ]
-    
-    # Vectorize the index calculation
-=======
-  }  
-  window_scores_fpca = matrix(NA, nrow=nrow(surv_data), ncol=npc)
-  counter <- 1
-  for (id in seq_along(unique(surv_data$id))) {
-    temp_df <- surv_data[surv_data$id == unique(surv_data$id)[id], ]    
-    ## Vectorize the index calculation
->>>>>>> ada20d6fd7a5c951c002fb429e6d50b27124a675
+    temp_df <- sdat[sdat$id == unique(sdat$id)[id], ]   
     idx <- c(0, vapply(temp_df$t_stop, function(x) {
       max(which(argvals_irregular <= x))
     }, FUN.VALUE = numeric(1)))    
@@ -110,6 +94,7 @@ AR1_PACE <- function(fdat, sdat, nbasis = 10, pve = 0.90,
     counter <- counter + length(scores)
   }
   colnames(window_scores_fpca) <- paste0("score", seq(npc))
-  return(list(window_scores_fpca = window_scores_fpca, uni.PACE = uni.PACE))
+  return(list(window_scores_fpca = window_scores_fpca,
+              FPC_argvals = uni.PACE$functions@argvals[[1]],
+              FPC_X = uni.PACE$functions@X))
 }
-
