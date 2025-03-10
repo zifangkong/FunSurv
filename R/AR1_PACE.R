@@ -52,7 +52,8 @@ AR1_PACE <- function(sdat, fdat, nbasis = 10, pve = 0.90,
   xList <- lapply(data_split, function(df) df$x)
   x_FunObject <- irregFunData(argvals = argvals, X = xList)  
   ## apply functional principal component analysis conditional expectation to the functional object
-  uni.PACE <- PACE(x_FunObject, nbasis = nbasis, pve=pve, npc = npc,
+  uni.PACE <- PACE(x_FunObject,
+                   nbasis = nbasis, pve=pve, npc = npc,
                    makePD = makePD, cov.weight.type = cov.weight.type)  
   sigma2 <- uni.PACE$sigma2
   argvals_irregular <- uni.PACE$mu@argvals[[1]]
