@@ -40,7 +40,9 @@
 #'   
 #' @noRd
 AR1_PACE <- function(sdat, fdat, nbasis = 10, pve = 0.90,
-                     npc = NULL, makePD = FALSE, cov.weight.type = "none"){
+                     npc = NULL, makePD = FALSE,
+                     cov.weight.type = c("none", "counts")) {
+  cov.weight.type <- match.arg(cov.weight.type)
   if(length(unique(sdat$id)) > length(unique(fdat$id))){
     removed_subj = unique(sdat$id)[! unique(sdat$id) %in% unique(fdat$id)]
     warning("Subjects" , paste0(removed_subj, collapse = ","), "were removed from analysis.")
