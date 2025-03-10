@@ -96,4 +96,3 @@ AR1_PACE <- function(sdat, fdat, nbasis = 10, pve = 0.90,
               FPC_argvals = uni.PACE$functions@argvals[[1]],
               FPC_X = uni.PACE$functions@X))
 }
-
