@@ -36,7 +36,8 @@ citation("FunSurv")
 
 ### Online documentation
 
-<https://github.com/zifangkong/FunSurv/blob/master/vignettes/funSurv-AR1_FRAILTY.html>
+Online documentation is available
+[here](https://raw.githubusercontent.com/zifangkong/FunSurv/refs/heads/master/docs/articles/funsurv-AR1_FRAILTY.html).
 
 ### References:
 
