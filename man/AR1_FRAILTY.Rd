@@ -95,12 +95,12 @@ and \eqn{\beta(t)} is a time-varying coefficient that captures the effect of fun
 data(simDat)
 
 fit <- AR1_FRAILTY(Recur(t_start \%to\% t_stop, id, status) ~ z1,
-                   sdat = sdat, fdat = fdat)
+                   sdat = sdat, fdat = fdat, iter.max = 30)
 
 summary(fit)
 }
 \seealso{
-\code{\link{Recur}}
+\code{\link[reda]{Recur}}
 
-\code{\link{PACE}}
+\code{\link[MFPCA]{PACE}}
 }
