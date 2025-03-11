@@ -1,4 +1,4 @@
-#' Fit a Functional Regression with AutoregressIve fraiLTY (FRAILTY) model for Recurrnet Event Data
+#' Fit a Functional Regression with AutoregressIve fraiLTY (FRAILTY) model for Recurrent Event Data
 #' 
 #' Jointly model longitudinal measurements and recurrent events, 
 #' accommodating both scalar and functional predictors while capturing time-dependent correlations among events. 
