@@ -1,0 +1,7 @@
+pandoc: 2.9.2.1
+pkgdown: 2.0.9
+pkgdown_sha: ~
+articles:
+  funsurv-AR1_FRAILTY: funsurv-AR1_FRAILTY.html
+last_built: 2025-03-11T17:44Z
+
