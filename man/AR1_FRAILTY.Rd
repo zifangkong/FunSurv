@@ -2,7 +2,7 @@
 % Please edit documentation in R/AR1_FRAILTY.R
 \name{AR1_FRAILTY}
 \alias{AR1_FRAILTY}
-\title{Fit a Functional Regression with AutoregressIve fraiLTY (FRAILTY) model for Recurrnet Event Data}
+\title{Fit a Functional Regression with AutoregressIve fraiLTY (FRAILTY) model for Recurrent Event Data}
 \usage{
 AR1_FRAILTY(
   formula,
