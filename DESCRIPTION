@@ -1,6 +1,6 @@
 Package: FunSurv
 Title: Joint Analysis of Recurrent Event and Longitudinal Data using a Functional Regression Approach
-Version: 0.1.0
+Version: 1.0.0
 Authors@R: 
     c(person("Zifang", "Kong", , "zkong@smu.edu", role = c("aut", "cre")),
       person("Sy Han (Steven)", "Chiou", role = "aut"),

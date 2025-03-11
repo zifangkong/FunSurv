@@ -8,3 +8,6 @@
 ^inst/bib
 ^inst/examples
 ^vignettes$
+^\.git$
+^\.github$
+^docs$
