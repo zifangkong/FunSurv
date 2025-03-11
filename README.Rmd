@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 ```
 
 ### Funcational data analysis for recurrent event data
-***FunSurv*** provides a novel framework for the joint analysis of recurrent event and longitudinal data using a functional regression approach. This package applies functional data analysis techniques to model the time-varying effects of longitudinal predictors on recurrent event processes, addressing the complex dependence structure between the two data types. 
+The [***FunSurv*** package](https://htmlpreview.github.io/?https://raw.githubusercontent.com/zifangkong/FunSurv/refs/heads/master/docs/index.html) provides a novel framework for the joint analysis of recurrent event and longitudinal data using a functional regression approach. This package applies functional data analysis techniques to model the time-varying effects of longitudinal predictors on recurrent event processes, addressing the complex dependence structure between the two data types. 
 
 ### Installation
 
@@ -38,7 +38,7 @@ citation("FunSurv")
 ```
 
 ### Online documentation 
-Online documentation is available [here](https://raw.githubusercontent.com/zifangkong/FunSurv/refs/heads/master/docs/articles/funsurv-AR1_FRAILTY.html).
+Online documentation is available [here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/zifangkong/FunSurv/refs/heads/master/docs/articles/funsurv-AR1_FRAILTY.html).
 
 ### References:
    Gellar, J. E., Colantuoni, E., Needham, D. M., & Crainiceanu, C. M. (2015). Cox Regression Models with Functional Covariates for Survival Data. *Statistical Modelling*, **15**(3), 256–278. https://doi.org/10.1177/1471082X14565526

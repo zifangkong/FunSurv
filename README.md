@@ -3,12 +3,13 @@
 
 ### Funcational data analysis for recurrent event data
 
-***FunSurv*** provides a novel framework for the joint analysis of
-recurrent event and longitudinal data using a functional regression
-approach. This package applies functional data analysis techniques to
-model the time-varying effects of longitudinal predictors on recurrent
-event processes, addressing the complex dependence structure between the
-two data types.
+The [***FunSurv***
+package](https://htmlpreview.github.io/?https://raw.githubusercontent.com/zifangkong/FunSurv/refs/heads/master/docs/index.html)
+provides a novel framework for the joint analysis of recurrent event and
+longitudinal data using a functional regression approach. This package
+applies functional data analysis techniques to model the time-varying
+effects of longitudinal predictors on recurrent event processes,
+addressing the complex dependence structure between the two data types.
 
 ### Installation
 
@@ -37,7 +38,7 @@ citation("FunSurv")
 ### Online documentation
 
 Online documentation is available
-[here](https://raw.githubusercontent.com/zifangkong/FunSurv/refs/heads/master/docs/articles/funsurv-AR1_FRAILTY.html).
+[here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/zifangkong/FunSurv/refs/heads/master/docs/articles/funsurv-AR1_FRAILTY.html).
 
 ### References:
 
