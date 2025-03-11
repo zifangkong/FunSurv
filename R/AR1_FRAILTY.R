@@ -64,9 +64,11 @@
 #' @importFrom MASS ginv
 #' @importFrom stats model.matrix model.extract model.frame
 #' @importFrom Matrix bdiag
+#' @importFrom MFPCA PACE
+#' @importFrom funData .intWeights irregFunData
 #'
-#' @seealso \code{\link{Recur}}
-#' @seealso \code{\link{PACE}}
+#' @seealso \code{\link[reda]{Recur}}
+#' @seealso \code{\link[MFPCA]{PACE}}
 #' @export
 #'
 #' @example inst/examples/ex_AR1_FRAILTY.R
