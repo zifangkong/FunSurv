@@ -1,11 +1,11 @@
 Package: FunSurv
-Title: Joint Analysis of Recurrent Event and Longitudinal Data using a Functional Regression Approach
+Title: Modeling Time-to-Event Data with Functional Predictors
 Version: 1.0.0
 Authors@R: 
     c(person("Zifang", "Kong", , "zkong@smu.edu", role = c("aut", "cre")),
       person("Sy Han (Steven)", "Chiou", role = "aut"),
       person("Yu-Lun", "Liu", role = c("aut")))
-Description: Functions to jointly analyze longitudinal measurements and recurrent events by accommodating both scalar and functional predictors while accounting for time-dependent correlations among events.
+Description: A collection of methods for modeling time-to-event data using both functional and scalar predictors. It implements functional data analysis techniques for estimation and inference, allowing researchers to assess the impact of functional covariates on survival outcomes, including time-to-single event and recurrent event outcomes.
 Depends: R (>= 3.5.0)
 License: MIT + file LICENSE
 URL: https://github.com/zifangkong/FunSurv
